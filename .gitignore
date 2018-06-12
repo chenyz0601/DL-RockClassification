@@ -1,17 +1,13 @@
-# Build and Release Folders
-bin-debug/
-bin-release/
-[Oo]bj/
-[Bb]in/
+# jupyter checkpoints
+.ipynb_checkpoints/
 
-# Other files and folders
-.settings/
+# data
+data/
+Workspace/
 
-# Executables
-*.swf
-*.air
-*.ipa
-*.apk
+# train process
+logs/
+Conv2D/
 
 # Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
 # should NOT be excluded as they contain compiler settings and other important
