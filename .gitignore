@@ -5,6 +5,9 @@
 data/
 Workspace/
 
+# cache file
+__pycache__/
+
 # train process
 logs/
 Conv2D/
