@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 
 class Data:
     
-    def __init__(self, path, num=None, random=False):
+    def __init__(self, path, start=0, num=10, random=False):
         """
         input:
             path: path to the block
@@ -14,6 +14,7 @@ class Data:
         """
         self.path_to_block = path
         self.N = num
+        self.start = start
         self.random = random
         
     def img_to_array(self, input_file, normalizer, dtype='float32'):
@@ -48,7 +49,7 @@ class Data:
         else:
             if self.N == None:
                 self.N = len(X_path)
-            idx = range(self.N)
+            idx = range(self.start, self.N)
 
         for i in idx:
             X_out.append(self.img_to_array(X_path[i], 10000.))

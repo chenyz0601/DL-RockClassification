@@ -21,8 +21,12 @@ class myModel:
         self.init_epoch = 0
         return
         
-    def build_Conv1D(self, num_bands=9, dim_width=256, dim_height=256,
-                     num_filters=64, len_filter=1, num_labels=10):
+    def build_Conv1D(self, num_bands=9,
+                     dim_width=256,
+                     dim_height=256,
+                     num_filters=64,
+                     len_filter=1,
+                     num_labels=10):
         self.model_type = 'Conv1D'
         return
     
@@ -30,8 +34,14 @@ class myModel:
         self.model_type = 'Conv3D'
         return
 
-    def build_Conv2D(self, num_bands=10, dim_width=256, dim_height=256, n_ch_list=[64, 64],
-                     num_labels=10, k_init='lecun_normal', activation='selu', use_tfboard=False):
+    def build_Conv2D(self, num_bands=10,
+                     dim_width=256,
+                     dim_height=256,
+                     n_ch_list=[64, 64],
+                     num_labels=10,
+                     k_init='lecun_normal',
+                     activation='selu',
+                     use_tfboard=False):
         """
         input:
             num_bands, int, number of input channels
@@ -65,11 +75,18 @@ class myModel:
         # encoders
         for l_idx, n_ch in enumerate(n_ch_list):
             with K.name_scope('Encoder_block_{0}'.format(l_idx)):
-                encoder = Conv2D(filters=n_ch, kernel_size=k_size, activation=activation, padding='same',
+                encoder = Conv2D(filters=n_ch,
+                                 kernel_size=k_size,
+                                 activation=activation,
+                                 padding='same',
                                  kernel_initializer=k_init)(encoder)
                 encoder = AlphaDropout(0.1*l_idx, )(encoder)
-                encoder = Conv2D(filters=n_ch, kernel_size=k_size, dilation_rate=(2, 2),
-                                 activation=activation, padding='same', kernel_initializer=k_init)(encoder)
+                encoder = Conv2D(filters=n_ch,
+                                 kernel_size=k_size,
+                                 dilation_rate=(2, 2),
+                                 activation=activation,
+                                 padding='same',
+                                 kernel_initializer=k_init)(encoder)
                 list_encoders.append(encoder)
                 # add maxpooling layer except the last layer
                 if l_idx < len(n_ch_list) - 1:
@@ -84,18 +101,32 @@ class myModel:
             with K.name_scope('Decoder_block_{0}'.format(l_idx)):
                 l_idx_rev = len(n_ch_list) - 1 - l_idx
                 decoder = concatenate([decoder, list_encoders[l_idx_rev]], axis=ch_axis)
-                decoder = Conv2D(filters=n_ch, kernel_size=k_size, activation=activation, padding='same',
-                                 dilation_rate=(2, 2), kernel_initializer=k_init)(decoder)
-                decoder = AlphaDropout(0.1*l_idx, )(decoder)
-                decoder = Conv2D(filters=n_ch, kernel_size=k_size, activation=activation, padding='same',
+                decoder = Conv2D(filters=n_ch,
+                                 kernel_size=k_size,
+                                 activation=activation,
+                                 padding='same',
+                                 dilation_rate=(2, 2),
                                  kernel_initializer=k_init)(decoder)
-                decoder = Conv2DTranspose(filters=n_ch, kernel_size=k_size, strides=(2, 2), 
-                                          activation=activation, padding='same', kernel_initializer=k_init)(decoder)
+                decoder = AlphaDropout(0.1*l_idx, )(decoder)
+                decoder = Conv2D(filters=n_ch,
+                                 kernel_size=k_size,
+                                 activation=activation,
+                                 padding='same',
+                                 kernel_initializer=k_init)(decoder)
+                decoder = Conv2DTranspose(filters=n_ch,
+                                          kernel_size=k_size,
+                                          strides=(2, 2), 
+                                          activation=activation,
+                                          padding='same',
+                                          kernel_initializer=k_init)(decoder)
 
         # output layer should be softmax
         # instead of using Conv2DTranspose, Dense layer could also be tried
-        outp = Conv2DTranspose(filters=num_labels, kernel_size=k_size, activation='softmax',
-                               padding='same', kernel_initializer='glorot_normal')(decoder)
+        outp = Conv2DTranspose(filters=num_labels,
+                               kernel_size=k_size,
+                               activation='softmax',
+                               padding='same',
+                               kernel_initializer='glorot_normal')(decoder)
 
         # summary image requires num of channels to be 1, 3 or 4
     #         if use_tfboard:
@@ -106,7 +137,9 @@ class myModel:
         self.model_type = 'Conv2D'
         return
     
-    def compile_model(self, loss='categorical_crossentropy', lr=1e-3, verbose=True):
+    def compile_model(self, loss='categorical_crossentropy',
+                      lr=1e-3,
+                      verbose=True):
         """
         input:
                 loss: string
@@ -123,7 +156,9 @@ class myModel:
         adam = keras.optimizers.adam(lr=lr)
 
         # build the whole computational graph with model, loss and optimizer
-        self.model.compile(loss=loss, optimizer=adam, metrics=['accuracy'])
+        self.model.compile(loss=loss,
+                           optimizer=adam,
+                           metrics=['accuracy'])
 
         # print parameters of each layer
         if verbose:
@@ -144,7 +179,12 @@ class myModel:
         if not os.path.exists(path):
             os.makedirs(path)
         filepath=path+'/weights-{epoch:02d}-{val_acc:.2f}.hdf5'
-        checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, save_weights_only=True, mode='max')
+        checkpoint = ModelCheckpoint(filepath,
+                                     monitor='val_acc',
+                                     verbose=1,
+                                     save_best_only=True,
+                                     save_weights_only=True,
+                                     mode='max')
 
         # Bring all the callbacks together into a python list
         self.callbackList = [tensorboard, checkpoint]
@@ -169,10 +209,20 @@ class myModel:
                 pass
         return
 
-    def fit_model(self, X_trn, Y_trn, verbose=1, validation_split=0.2, batch_size=6, epochs=10):
-        self.model.fit(x=X_trn, y=Y_trn, verbose=verbose, validation_split=validation_split, 
-                       batch_size=batch_size, epochs=epochs,
-                       callbacks=self.callbackList, initial_epoch=self.init_epoch)
+    def fit_model(self, X_trn,
+                  Y_trn,
+                  verbose=1,
+                  validation_split=0.2,
+                  batch_size=6,
+                  epochs=10):
+        self.model.fit(x=X_trn,
+                       y=Y_trn,
+                       verbose=verbose,
+                       validation_split=validation_split, 
+                       batch_size=batch_size,
+                       epochs=epochs,
+                       callbacks=self.callbackList,
+                       initial_epoch=self.init_epoch)
         return
 
     def save_weights(self, suffix='model-1'):
