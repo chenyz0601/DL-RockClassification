@@ -214,13 +214,13 @@ class myModel:
                   verbose=1,
                   validation_split=0.2,
                   batch_size=6,
-                  epochs=10):
+                  num_epochs=10):
         self.model.fit(x=X_trn,
                        y=Y_trn,
                        verbose=verbose,
                        validation_split=validation_split, 
                        batch_size=batch_size,
-                       epochs=epochs,
+                       epochs=self.init_epoch+num_epochs,
                        callbacks=self.callbackList,
                        initial_epoch=self.init_epoch)
         return
