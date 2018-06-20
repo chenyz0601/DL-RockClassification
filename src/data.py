@@ -16,8 +16,21 @@ class Data:
         self.N = num + start
         self.start = start
         self.random = random
+      
+    def get_MinMax(self, path):
+        file = gdal.Open(path)
+        min_list = []
+        max_list = []
+        for i in range(1, file.RasterCount+1):
+            if i < 11:
+                min_list.append(0.)
+                max_list.append(10000.)
+            else:
+                min_list.append(file.GetRasterBand(i).GetMinimum())
+                max_list.append(file.GetRasterBand(i).GetMaximum())
+        return min_list, max_list
         
-    def img_to_array(self, input_file, normalizer, dtype='float32'):
+    def img_to_array(self, input_file, min_list=None, max_list=None, dtype='float32'):
         """
         convert a raster tile into numpy array
         input:
@@ -29,11 +42,14 @@ class Data:
             arr: numpy array, shape is [dim_y, dim_x, num_bands]
         """
         file = gdal.Open(input_file)
-        bands = [np.array(file.GetRasterBand(i).ReadAsArray()).astype(dtype) / normalizer for i in range(1, file.RasterCount + 1)]
+        if min_list != None:
+            bands = [(np.array(file.GetRasterBand(i).ReadAsArray()).astype(dtype) - min_list[i-1]) / (max_list[i-1] - min_list[i-1]) for i in range(1, file.RasterCount + 1)]
+        else:
+            bands = [np.array(file.GetRasterBand(i).ReadAsArray()).astype(dtype) for i in range(1, file.RasterCount + 1)]
         arr = np.stack(bands, axis=2)
         return arr
 
-    def load_XY(self):
+    def load_XY(self, min_list, max_list, as_arr=False):
         """
         function: load max_num of XY into lists
         output: list of numpy arrays, X (images) and Y (labels)
@@ -52,9 +68,12 @@ class Data:
             idx = range(self.start, self.N)
 
         for i in idx:
-            X_out.append(self.img_to_array(X_path[i], 10000.))
-            Y_out.append(self.img_to_array(Y_path[i], 1.))
-        return X_out, Y_out
+            X_out.append(self.img_to_array(X_path[i], min_list=min_list, max_list=max_list))
+            Y_out.append(self.img_to_array(Y_path[i], dtype='int'))
+        if as_arr:
+            return np.asarray(X_out), np.asarray(Y_out)
+        else:
+            return X_out, Y_out
         
     def trn_tst_split(self, test_rate, random_seed):
         """
