@@ -13,7 +13,7 @@ class Data:
             random: bool, to load samples randomly or from 0 to num_max
         """
         self.path_to_block = path
-        self.N = num
+        self.N = num + start
         self.start = start
         self.random = random
         
