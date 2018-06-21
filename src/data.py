@@ -1,7 +1,7 @@
 import numpy as np
 from osgeo import gdal
 import glob
-from sklearn.model_selection import train_test_split
+# from sklearn.model_selection import train_test_split
 
 class Data:
     
@@ -47,6 +47,7 @@ class Data:
         else:
             bands = [np.array(file.GetRasterBand(i).ReadAsArray()).astype(dtype) for i in range(1, file.RasterCount + 1)]
         arr = np.stack(bands, axis=2)
+        arr[arr>1.] = 0.
         return arr
 
     def get_XY(self, min_list, max_list, start=0, num=10, as_arr=False, random=False):
@@ -58,24 +59,31 @@ class Data:
         Y_out = []
         
         if random:
-            idx = np.random.randint(0, len(self.X), num)
+            idx = np.random.choice(list(range(len(self.X))), num, replace=False)
+            print('randomly loading {0} tiles from {1} tiles'.format(num, len(self.X))) 
         else:
-            idx = range(start, start+num)
+            idx = list(range(start, start+num))
+            print('loading {0} - {1} image tiles'.format(start, start+num-1))
 
         for i in idx:
             X_out.append(self.img_to_array(self.X[i], min_list=min_list, max_list=max_list))
             Y_out.append(self.img_to_array(self.Y[i], dtype='int'))
+        
+        X_remove = [self.X[i] for i in idx]
+        Y_remove = [self.Y[i] for i in idx]
+        
+        for i in range(len(X_remove)):
+            self.X.remove(X_remove[i])
+            self.Y.remove(Y_remove[i])
+        
         if as_arr:
             return np.asarray(X_out), np.asarray(Y_out)
         else:
             return X_out, Y_out
         
+    """
     def trn_tst_split(self, test_rate, random_seed):
-        """
-        input:  test_rate, double, between 0 and 1,
-                random_seed, randomness to generate tst and trn data
-        output: lists of train and test datasets
-        """
         X, Y = self.get_XY()
         X_trn, X_tst, Y_trn, Y_tst = train_test_split(X, Y, train_size=1-test_rate, test_size=test_rate, random_state=random_seed)
         return np.asarray(X_trn), np.asarray(X_tst), np.asarray(Y_trn), np.asarray(Y_tst)
+    """

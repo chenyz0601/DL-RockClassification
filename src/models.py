@@ -209,6 +209,7 @@ class myModel:
                 pass
         return
 
+    ### TO DO: fit_generator ###
     def fit_model(self, X_trn,
                   Y_trn,
                   verbose=1,
