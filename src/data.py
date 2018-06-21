@@ -5,17 +5,17 @@ from sklearn.model_selection import train_test_split
 
 class Data:
     
-    def __init__(self, path, start=0, num=10, random=False):
+    def __init__(self, path, random=False):
         """
         input:
             path: path to the block
             max_num: int, num of samples
             random: bool, to load samples randomly or from 0 to num_max
         """
-        self.path_to_block = path
-        self.N = num + start
-        self.start = start
-        self.random = random
+        self.X = sorted(glob.glob(path+"images/images/*.tif"))
+        self.Y = sorted(glob.glob(path+"labels/images/*.tif"))
+        if len(self.X) != len(self.Y):
+            raise ValueError('imgs and labels are not matched')
       
     def get_MinMax(self, path):
         file = gdal.Open(path)
@@ -49,27 +49,22 @@ class Data:
         arr = np.stack(bands, axis=2)
         return arr
 
-    def load_XY(self, min_list, max_list, as_arr=False):
+    def get_XY(self, min_list, max_list, start=0, num=10, as_arr=False, random=False):
         """
         function: load max_num of XY into lists
         output: list of numpy arrays, X (images) and Y (labels)
         """
         X_out = []
         Y_out = []
-        X_path = sorted(glob.glob(self.path_to_block+"images/images/*.tif"))
-        Y_path = sorted(glob.glob(self.path_to_block+"labels/images/*.tif"))
-        if len(X_path) != len(Y_path):
-            raise ValueError('imgs and labels are not matched')
-        if self.random:
-            idx = np.random.randint(0, len(X_path), self.N)
+        
+        if random:
+            idx = np.random.randint(0, len(self.X), num)
         else:
-            if self.N == None:
-                self.N = len(X_path)
-            idx = range(self.start, self.N)
+            idx = range(start, start+num)
 
         for i in idx:
-            X_out.append(self.img_to_array(X_path[i], min_list=min_list, max_list=max_list))
-            Y_out.append(self.img_to_array(Y_path[i], dtype='int'))
+            X_out.append(self.img_to_array(self.X[i], min_list=min_list, max_list=max_list))
+            Y_out.append(self.img_to_array(self.Y[i], dtype='int'))
         if as_arr:
             return np.asarray(X_out), np.asarray(Y_out)
         else:
@@ -81,6 +76,6 @@ class Data:
                 random_seed, randomness to generate tst and trn data
         output: lists of train and test datasets
         """
-        X, Y = self.load_XY()
+        X, Y = self.get_XY()
         X_trn, X_tst, Y_trn, Y_tst = train_test_split(X, Y, train_size=1-test_rate, test_size=test_rate, random_state=random_seed)
         return np.asarray(X_trn), np.asarray(X_tst), np.asarray(Y_trn), np.asarray(Y_tst)
