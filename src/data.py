@@ -1,6 +1,7 @@
 import numpy as np
 from osgeo import gdal
 import glob
+import keras
 # from sklearn.model_selection import train_test_split
 
 class DataGenerator(keras.utils.Sequence):
