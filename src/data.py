@@ -3,6 +3,70 @@ from osgeo import gdal
 import glob
 # from sklearn.model_selection import train_test_split
 
+class DataGenerator(keras.utils.Sequence):
+    'Generates data for Keras'
+    def __init__(self, path, batch_size=32, shuffle=True):
+        'Initialization'
+        self.X_IDs = sorted(glob.glob(path+"images/images/*.tif"))
+        self.Y_IDs = sorted(glob.glob(path+"labels/images/*.tif"))
+        if len(self.X_IDs) != len(self.Y_IDs):
+            raise ValueError('imgs and labels are not matched')
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.on_epoch_end()
+
+    def __len__(self):
+        'Denotes the number of batches per epoch'
+        return int(np.floor(len(self.X_IDs) / self.batch_size))
+
+    def __getitem__(self, index):
+        'Generate one batch of data'
+        # Generate indexes of the batch
+        indexes = self.indexes[index*self.batch_size:(index+1)*self.batch_size]
+
+        # Find list of IDs
+        X_IDs_temp = [self.X_IDs[k] for k in indexes]
+        Y_IDs_temp = [self.Y_IDs[k] for k in indexes]
+
+        # Generate data
+        X, y = self.__data_generation(X_IDs_temp, Y_IDs_temp)
+
+        return X, y
+
+    def on_epoch_end(self):
+        'Updates indexes after each epoch'
+        self.indexes = np.arange(len(self.X_IDs))
+        if self.shuffle == True:
+            np.random.shuffle(self.indexes)
+
+    def __data_generation(self, X_IDs_temp, Y_IDs_temp):
+        'Generates data containing batch_size samples' 
+        # X_out : (n_samples, *dim, n_channels)
+        # Y_out : (n_samples, *dim, n_classes)
+        # Initialization
+        X_out = []
+        Y_out = []
+        for i in range(len(X_IDs_temp)):
+            X_out.append(self.img_to_array(self.X_IDs[i]))
+            Y_out.append(self.img_to_array(self.Y_IDs[i], dtype='int'))
+        return np.asarray(X_out), np.asarray(Y_out)
+    
+    def img_to_array(self, input_file, dtype='float32'):
+        """
+        convert a raster tile into numpy array
+        input:
+            input_file: string, path a raster(.tif)
+            normalizer: double, if input is labels with 0 or 1, it's 1.
+                                if input is sentinal data (reflectance), then it's 10000.
+            dtype: string, data type, default as 'float32'
+        return:
+            arr: numpy array, shape is [dim_y, dim_x, num_bands]
+        """
+        file = gdal.Open(input_file)
+        bands = [np.array(file.GetRasterBand(i).ReadAsArray()).astype(dtype) for i in range(1, file.RasterCount + 1)]
+        arr = np.stack(bands, axis=2)
+        return arr
+
 class Data:
     
     def __init__(self, path, random=False):
