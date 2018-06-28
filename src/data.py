@@ -20,6 +20,20 @@ class DataGenerator(keras.utils.Sequence):
         'Denotes the number of batches per epoch'
         return int(np.floor(len(self.X_IDs) / self.batch_size))
 
+    def getitem(self, index):
+        'Generate one batch of data'
+        # Generate indexes of the batch
+        indexes = self.indexes[index*self.batch_size:(index+1)*self.batch_size]
+
+        # Find list of IDs
+        X_IDs_temp = [self.X_IDs[k] for k in indexes]
+        Y_IDs_temp = [self.Y_IDs[k] for k in indexes]
+
+        # Generate data
+        X, y = self.__data_generation(X_IDs_temp, Y_IDs_temp)
+
+        return X, y
+    
     def __getitem__(self, index):
         'Generate one batch of data'
         # Generate indexes of the batch
