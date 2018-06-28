@@ -1,11 +1,11 @@
 # DL-RockClassification
-deep learning for rock classification
-the model is based on U-net
+deep learning for rock classification<br>
+the model is based on U-net<br>
 
-use arcpy jupyter notebook API to open pre-processing.ipynb
+use arcpy jupyter notebook API to open pre-processing.ipynb<br>
 
 #### composite all useful bands into a multiband raster
-each band is normalized by (-max)/(max-min)
+each band is normalized by (-max)/(max-min)<br>
 | band | meaning |
 |-------|------|
 | 0     | Blue |
