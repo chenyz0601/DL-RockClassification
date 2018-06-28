@@ -225,6 +225,22 @@ class myModel:
                        callbacks=self.callbackList,
                        initial_epoch=self.init_epoch)
         return
+    
+    def fit_model_generator(self, train_generator,
+                            valid_generator,
+                            verbose=1,
+                            workers=1,
+                            use_multiprocessing=False,
+                            num_epochs=10):
+        self.model.fit_generator(generator=train_generator,
+                                 validation_data=valid_generator,
+                                 verbose=verbose,
+                                 epochs=self.init_epoch+num_epochs,
+                                 callbacks=self.callbackList,
+                                 workers=workers,
+                                 use_multiprocessing=use_multiprocessing,
+                                 initial_epoch=self.init_epoch)
+        return
 
     def save_weights(self, suffix='model-1'):
 

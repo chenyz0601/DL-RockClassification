@@ -6,10 +6,10 @@ import keras
 
 class DataGenerator(keras.utils.Sequence):
     'Generates data for Keras'
-    def __init__(self, path, batch_size=32, shuffle=True):
+    def __init__(self, X_IDs, Y_IDs, batch_size=32, shuffle=True):
         'Initialization'
-        self.X_IDs = sorted(glob.glob(path+"images/images/*.tif"))
-        self.Y_IDs = sorted(glob.glob(path+"labels/images/*.tif"))
+        self.X_IDs = X_IDs
+        self.Y_IDs = Y_IDs
         if len(self.X_IDs) != len(self.Y_IDs):
             raise ValueError('imgs and labels are not matched')
         self.batch_size = batch_size
@@ -48,25 +48,11 @@ class DataGenerator(keras.utils.Sequence):
         X_out = []
         Y_out = []
         for i in range(len(X_IDs_temp)):
-            X_out.append(self.img_to_array(self.X_IDs[i]))
-            Y_out.append(self.img_to_array(self.Y_IDs[i], dtype='int'))
+            X_out.append(np.load(X_IDs_temp[i]))
+            Y_out.append(np.load(Y_IDs_temp[i]))
+            # X_out.append(self.img_to_array(self.X_IDs_temp[i]))
+            # Y_out.append(self.img_to_array(self.Y_IDs_temp[i], dtype='int'))
         return np.asarray(X_out), np.asarray(Y_out)
-    
-    def img_to_array(self, input_file, dtype='float32'):
-        """
-        convert a raster tile into numpy array
-        input:
-            input_file: string, path a raster(.tif)
-            normalizer: double, if input is labels with 0 or 1, it's 1.
-                                if input is sentinal data (reflectance), then it's 10000.
-            dtype: string, data type, default as 'float32'
-        return:
-            arr: numpy array, shape is [dim_y, dim_x, num_bands]
-        """
-        file = gdal.Open(input_file)
-        bands = [np.array(file.GetRasterBand(i).ReadAsArray()).astype(dtype) for i in range(1, file.RasterCount + 1)]
-        arr = np.stack(bands, axis=2)
-        return arr
 
 class Data:
     
