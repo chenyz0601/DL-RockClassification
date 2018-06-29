@@ -40,8 +40,7 @@ class myModel:
                      n_ch_list=[64, 64],
                      num_labels=10,
                      k_init='lecun_normal',
-                     activation='selu',
-                     use_tfboard=False):
+                     activation='selu'):
         """
         input:
             num_bands, int, number of input channels
@@ -91,8 +90,8 @@ class myModel:
                 # add maxpooling layer except the last layer
                 if l_idx < len(n_ch_list) - 1:
                     encoder = MaxPooling2D(pool_size=(2,2))(encoder)
-                if use_tfboard:
-                    tf.summary.histogram('conv_encoder', encoder)
+                # if use_tfboard:
+                    # tf.summary.histogram('conv_encoder', encoder)
         # decoders
         decoder = encoder
         dec_n_ch_list = n_ch_list[::-1][1:]
@@ -152,10 +151,13 @@ class myModel:
         print('compiling model ...')
         
         # specify loss and optimizer
+        # if the target is one-hot encoded, use categorical_crossentropy
+        # otherwise use sparse_categorical_crossentropy
         loss = 'categorical_crossentropy'
         adam = keras.optimizers.adam(lr=lr)
 
         # build the whole computational graph with model, loss and optimizer
+        # 'accuracy' is defaultly categorical_accuracy
         self.model.compile(loss=loss,
                            optimizer=adam,
                            metrics=['accuracy'])
@@ -165,15 +167,12 @@ class myModel:
             print(self.model.summary())
         return
     
-    def build_callbackList(self, log_dir='./logs'):
+    def build_callbackList(self, log_dir='./logs', use_tfboard=False):
         
         if self.model_type == None:
             raise ValueError('model is not built yet, please build 1D, 2D or 3D convnet model')
         else:
             path = './{0}'.format(self.model_type)
-            
-        # Tensorboard
-        tensorboard = TrainValTensorBoard(log_dir=log_dir)
 
         # Model Checkpoints
         if not os.path.exists(path):
@@ -187,7 +186,12 @@ class myModel:
                                      mode='max')
 
         # Bring all the callbacks together into a python list
-        self.callbackList = [tensorboard, checkpoint]
+        self.callbackList = [checkpoint]
+                    
+        # Tensorboard
+        if use_tfboard:
+            tensorboard = TrainValTensorBoard(log_dir=log_dir)
+            self.callbackList.append(tensorboard)
         return
         
     def load_checkpoint(self):
@@ -267,7 +271,7 @@ class myModel:
     
     
 class TrainValTensorBoard(TensorBoard):
-    def __init__(self, log_dir='./logs', hist_freq=1, **kwargs):
+    def __init__(self, log_dir='./logs', hist_freq=0, **kwargs):
         # Make the original `TensorBoard` log to a subdirectory 'training'
         training_log_dir = os.path.join(log_dir, 'training')
         super(TrainValTensorBoard, self).__init__(training_log_dir, histogram_freq=hist_freq, **kwargs)
