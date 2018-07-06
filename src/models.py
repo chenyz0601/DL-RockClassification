@@ -3,7 +3,7 @@ import re
 import tensorflow as tf
 import keras
 from keras.layers import Input, Dense, Activation, ZeroPadding2D, BatchNormalization, Flatten, Conv2D, Conv2DTranspose
-from keras.layers import AveragePooling2D, MaxPooling2D, Dropout, GlobalMaxPooling2D, GlobalAveragePooling2D, Lambda, AlphaDropout
+from keras.layers import AveragePooling2D, MaxPooling2D, Dropout, Lambda, AlphaDropout
 from keras.layers.advanced_activations import LeakyReLU
 from keras.models import load_model, Model
 # from keras.preprocessing.image import ImageDataGenerator
@@ -54,6 +54,7 @@ class myModel:
 
         if K.image_data_format() == 'channels_first':
             ch_axis = 1
+            print('there might be a problem with softmax')
             input_shape = (num_bands, dim_width, dim_height)
         elif K.image_data_format() == 'channels_last':
             ch_axis = 3

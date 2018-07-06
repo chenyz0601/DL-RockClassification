@@ -62,8 +62,8 @@ class DataGenerator(keras.utils.Sequence):
         X_out = []
         Y_out = []
         for i in range(len(X_IDs_temp)):
-            X_out.append(np.load(X_IDs_temp[i]))
-            Y_out.append(np.load(Y_IDs_temp[i]))
+            X_out.append(np.transpose(np.load(X_IDs_temp[i]), [1,2,0]))
+            Y_out.append(np.transpose(np.load(Y_IDs_temp[i]), [1,2,0]))
             # X_out.append(self.img_to_array(self.X_IDs_temp[i]))
             # Y_out.append(self.img_to_array(self.Y_IDs_temp[i], dtype='int'))
         return np.asarray(X_out), np.asarray(Y_out)
