@@ -2,7 +2,7 @@ import glob
 import re
 import tensorflow as tf
 import keras
-from keras.layers import Input, Dense, Activation, ZeroPadding2D, BatchNormalization, Flatten, Conv2D, Conv2DTranspose, Conv1D, Conv3D, Conv3DTranspose
+from keras.layers import Input, Dense, Activation, ZeroPadding2D, BatchNormalization, Flatten, Conv2D, Conv2DTranspose
 from keras.layers import AveragePooling2D, MaxPooling2D, Dropout, GlobalMaxPooling2D, GlobalAveragePooling2D, Lambda, AlphaDropout
 from keras.layers.advanced_activations import LeakyReLU
 from keras.models import load_model, Model
@@ -34,7 +34,7 @@ class myModel:
         self.model_type = 'Conv3D'
         return
 
-    def build_Conv2D(self, num_bands=10,
+    def build_Unet(self, num_bands=10,
                      dim_width=256,
                      dim_height=256,
                      n_ch_list=[64, 64],
@@ -68,7 +68,7 @@ class myModel:
     #     if use_tfboard:
     #         tf.summary.image(name='input', tensor=inp)  
 
-        print('building Conv2D ...')
+        print('building Unet ...')
         print(n_ch_list)
         k_size = (3, 3)
         # encoders
@@ -133,7 +133,7 @@ class myModel:
 
         self.model = Model(inputs=[inp], outputs=[outp])
         
-        self.model_type = 'Conv2D'
+        self.model_type = 'Unet'
         return
     
     def compile_model(self, loss='categorical_crossentropy',
@@ -146,7 +146,7 @@ class myModel:
                 verbose: bool
         """
         if self.model_type == None:
-            raise ValueError('model is not built yet, please build 1D, 2D or 3D convnet model')
+            raise ValueError('model is not built yet, please build Unet model')
             
         print('compiling model ...')
         
