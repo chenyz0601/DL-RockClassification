@@ -10,7 +10,7 @@ __pycache__/
 
 # train process
 logs/
-Conv2D/
+UNet/
 train_process/
 
 # Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`

@@ -15,7 +15,8 @@ import os, random
 class myModel:
     
     def __init__(self):
-        self.model = None
+        self.Segmentor = None
+        self.Adversary = None
         self.callbackList = None
         self.model_type = None
         self.init_epoch = 0
@@ -30,17 +31,13 @@ class myModel:
         self.model_type = 'Conv1D'
         return
     
-    def build_Conv3D(self):
-        self.model_type = 'Conv3D'
-        return
-
-    def build_Unet(self, num_bands=10,
-                     dim_width=256,
-                     dim_height=256,
-                     n_ch_list=[64, 64],
-                     num_labels=10,
-                     k_init='lecun_normal',
-                     activation='selu'):
+    def build_Segmentor(self, num_bands=10,
+                        dim_width=256,
+                        dim_height=256,
+                        n_ch_list=[64, 64],
+                        num_labels=10,
+                        k_init='lecun_normal',
+                        activation='selu'):
         """
         input:
             num_bands, int, number of input channels
@@ -132,12 +129,36 @@ class myModel:
     #         if use_tfboard:
     #             tf.summary.image(name='output', tensor=outp)
 
-        self.model = Model(inputs=[inp], outputs=[outp])
+        self.Segmentor = Model(inputs=[inp], outputs=[outp])
         
-        self.model_type = 'Unet'
+        self.Segmentor_type = 'Unet'
         return
     
-    def compile_model(self, loss='categorical_crossentropy',
+    def build_AdversarialNet(self, num_bands=10,
+                             dim_width=256,
+                             dim_height=256,
+                             num_labels=10,
+                             k_init='lecun_normal',
+                             activation='selu'):
+        
+        if K.image_data_format() == 'channels_first':
+            ch_axis = 1
+            print('there might be a problem with softmax')
+        elif K.image_data_format() == 'channels_last':
+            ch_axis = 3
+        
+        img_inp = self.Segmentor.inputs
+        label_inp = Input(label_shape)
+        pred_inp = self.Segmentor.outputs
+        ### TO DO ###
+        
+        return
+    
+    def get_AdversarialNet(self, inp1, inp2):
+        ### TO DO ###
+        return
+    
+    def compile_Segmentor(self, loss='categorical_crossentropy',
                       lr=1e-3,
                       verbose=True):
         """
@@ -146,10 +167,10 @@ class myModel:
                 lr: double
                 verbose: bool
         """
-        if self.model_type == None:
-            raise ValueError('model is not built yet, please build Unet model')
+        if self.Segmentor_type == None:
+            raise ValueError('model is not built yet, please build Unet Segmentor')
             
-        print('compiling model ...')
+        print('compiling Segmentor only ...')
         
         # specify loss and optimizer
         # if the target is one-hot encoded, use categorical_crossentropy
@@ -159,13 +180,13 @@ class myModel:
 
         # build the whole computational graph with model, loss and optimizer
         # 'accuracy' is defaultly categorical_accuracy
-        self.model.compile(loss=loss,
-                           optimizer=adam,
-                           metrics=['accuracy'])
+        self.Segmentor.compile(loss=loss,
+                               optimizer=adam,
+                               metrics=['accuracy'])
 
         # print parameters of each layer
         if verbose:
-            print(self.model.summary())
+            print(self.Segmentor.summary())
         return
     
     def build_callbackList(self, log_dir='./logs', use_tfboard=False):
@@ -231,20 +252,20 @@ class myModel:
                        initial_epoch=self.init_epoch)
         return
     
-    def fit_model_generator(self, train_generator,
-                            valid_generator,
-                            verbose=1,
-                            workers=1,
-                            use_multiprocessing=False,
-                            num_epochs=10):
-        self.model.fit_generator(generator=train_generator,
-                                 validation_data=valid_generator,
-                                 verbose=verbose,
-                                 epochs=self.init_epoch+num_epochs,
-                                 callbacks=self.callbackList,
-                                 workers=workers,
-                                 use_multiprocessing=use_multiprocessing,
-                                 initial_epoch=self.init_epoch)
+    def fit_Segmentor_generator(self, train_generator,
+                                valid_generator,
+                                verbose=1,
+                                workers=1,
+                                use_multiprocessing=False,
+                                num_epochs=10):
+        self.Segmentor.fit_generator(generator=train_generator,
+                                     validation_data=valid_generator,
+                                     verbose=verbose,
+                                     epochs=self.init_epoch+num_epochs,
+                                     callbacks=self.callbackList,
+                                     workers=workers,
+                                     use_multiprocessing=use_multiprocessing,
+                                     initial_epoch=self.init_epoch)
         return
 
     def save_weights(self, suffix='model-1'):
