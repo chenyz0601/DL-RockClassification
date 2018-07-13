@@ -94,11 +94,11 @@ class AdvSeg:
                                      use_multiprocessing=use_multiprocessing,
                                      initial_epoch=self.init_epoch)
     
-    def AdvSegLoss(self, y_true, y_pred, scale=1e-2):
+    def AdvSegLoss(self, y_true, y_pred, scale=1e-1):
         mce = K.mean(K.mean(categorical_crossentropy(y_true, y_pred), axis=-1), axis=-1)
         bce_true = K.log(self.adv_out_true)
         bce_fake = K.log(1. - self.adv_out_fake)
-        return mce+scale*(bce_true+bce_fake)
+        return mce-scale*(bce_true+bce_fake)
     
     def build_callbackList(self, use_tfboard, log_dir='./logs'):        
         if self.model_type == None:
