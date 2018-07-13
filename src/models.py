@@ -46,10 +46,11 @@ class AdvSeg:
         pred_inp = SegmentorNet(img_inp, self.num_labels, seg_ch_list, k_size, k_init, activation)
         
         # with K.variable_scope("AdversarialNet", reuse=True):
-        self.adv_out_true = AdversarialNet(img_inp, label_inp, adv_ch_list,
-                                               k_size, k_init, activation, br_ch)
-        self.adv_out_fake = AdversarialNet(img_inp, pred_inp, adv_ch_list,
-                                               k_size, k_init, activation, br_ch)
+        adv_model = Model(inputs=[img_inp, label_inp],
+                          outputs=AdversarialNet(img_inp, label_inp, adv_ch_list,
+                                                 k_size, k_init, activation, br_ch))
+        self.adv_out_true = adv_model([img_inp, label_inp])
+        self.adv_out_fake = adv_model([img_inp, pred_inp])
         
         self.model = Model(inputs=[img_inp, label_inp],
                            outputs=[pred_inp])
