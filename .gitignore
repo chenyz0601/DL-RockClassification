@@ -10,7 +10,7 @@ __pycache__/
 
 # train process
 logs/
-UNet/
+Segmentor/
 train_process/
 
 # Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`

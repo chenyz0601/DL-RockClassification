@@ -6,8 +6,9 @@ import keras
 
 class DataGenerator(keras.utils.Sequence):
     'Generates data for Keras'
-    def __init__(self, X_IDs, Y_IDs, batch_size=32, shuffle=True):
+    def __init__(self, X_IDs, Y_IDs, batch_size=32, shuffle=True, dtype='all'):
         'Initialization'
+        self.dtype = dtype
         self.X_IDs = X_IDs
         self.Y_IDs = Y_IDs
         if len(self.X_IDs) != len(self.Y_IDs):
@@ -61,11 +62,16 @@ class DataGenerator(keras.utils.Sequence):
         # Initialization
         X_out = []
         Y_out = []
-        for i in range(len(X_IDs_temp)):
-            X_out.append(np.transpose(np.load(X_IDs_temp[i]), [1,2,0]))
-            Y_out.append(np.transpose(np.load(Y_IDs_temp[i]), [1,2,0]))
-            # X_out.append(self.img_to_array(self.X_IDs_temp[i]))
-            # Y_out.append(self.img_to_array(self.Y_IDs_temp[i], dtype='int'))
+        if self.dtype == 'all':
+            for i in range(len(X_IDs_temp)):
+                X_out.append(np.transpose(np.load(X_IDs_temp[i]), [1,2,0]))
+                Y_out.append(np.transpose(np.load(Y_IDs_temp[i]), [1,2,0]))
+        elif self.dtype == 'sent':
+            for i in range(len(X_IDs_temp)):
+                X_out.append(np.transpose(np.load(X_IDs_temp[i])[:10,:,:], [1,2,0]))
+                Y_out.append(np.transpose(np.load(Y_IDs_temp[i]), [1,2,0]))
+        else:
+            raise ValueError('unknown dtype, should be all or sent')
         return np.asarray(X_out), np.asarray(Y_out)
 
 class Data:
