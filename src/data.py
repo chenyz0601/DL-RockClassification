@@ -6,9 +6,10 @@ import keras
 
 class DataGenerator(keras.utils.Sequence):
     'Generates data for Keras'
-    def __init__(self, X_IDs, Y_IDs, batch_size=32, shuffle=True, dtype='all'):
+    def __init__(self, X_IDs, Y_IDs, batch_size=32, shuffle=True, dtype='all', intype='Seg'):
         'Initialization'
         self.dtype = dtype
+        self.intype = intype
         self.X_IDs = X_IDs
         self.Y_IDs = Y_IDs
         if len(self.X_IDs) != len(self.Y_IDs):
@@ -32,8 +33,13 @@ class DataGenerator(keras.utils.Sequence):
 
         # Generate data
         X, y = self.__data_generation(X_IDs_temp, Y_IDs_temp)
-
-        return X, y
+        
+        if self.intype == 'Seg':
+            return X, y
+        elif self.intype == 'AdvSeg':
+            return [X, y], y
+        else:
+            raise ValueError('invalid intype, should be Seg or AdvSeg')
     
     def __getitem__(self, index):
         'Generate one batch of data'
@@ -46,8 +52,13 @@ class DataGenerator(keras.utils.Sequence):
 
         # Generate data
         X, y = self.__data_generation(X_IDs_temp, Y_IDs_temp)
-
-        return X, y
+        
+        if self.intype == 'Seg':
+            return X, y
+        elif self.intype == 'AdvSeg':
+            return [X, y], y
+        else:
+            raise ValueError('invalid intype, should be Seg or AdvSeg')
 
     def on_epoch_end(self):
         'Updates indexes after each epoch'
