@@ -2,12 +2,13 @@
 ## Problem description
 Deep learning for rock classification, which is similar with semantic segmentation in computer vision.<br>
 Input a multi-band remote sensing image, the purpose is to classify each pixel in the image into different classes of rocks.<br>
-![An example](https://github.com/chenyz0601/DL-RockClassification/example.png)<br>
+![An example](https://github.com/chenyz0601/DL-RockClassification/blob/master/example.png)<br>
 ## Model: Segmentation net + Adversarial net
 The model has too parts: Segmentation net and Adversarial net, follows the description in [Semantic Segmentation using Adversarial Networks](https://arxiv.org/pdf/1611.08408.pdf)<br> 
 Segmentation net is based on [U-net](https://arxiv.org/pdf/1505.04597.pdf).<br>
 ![the structure of U--net](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/u-net-architecture.png)<br>
 In this model, using a list [64,64,64,64] to control the number of filters of each encoder or decoder. And the last layer is using softmax for multi-class classification.<br>
+Using AlphaDropout, and dropout rate is lower as network goes deeper, using Conv2DTranspose to do the deconvolution.<br>
 <br>
 Adversarial net takes the multi-band remote sensing image and corresponding label as input, outputs a number in range [0,1], which indicates the probability of that label is not produced by the segmentation net.<br> 
 
