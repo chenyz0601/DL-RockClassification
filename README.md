@@ -1,15 +1,22 @@
 # DL-RockClassification
-## Segmentation net + Adversarial net
-deep learning for rock classification, which is similar with semantic segmentation in computer vision<br>
-This model has too parts: Segmentation net and Adversarial net, as described in [Semantic Segmentation using Adversarial Networks](https://arxiv.org/pdf/1611.08408.pdf)<br> 
-Segmentation net is based on [U-net](https://arxiv.org/pdf/1505.04597.pdf)<br>
+## Problem description
+Deep learning for rock classification, which is similar with semantic segmentation in computer vision.<br>
+Input a multi-band remote sensing image, the purpose is to classify each pixel in the image into different classes of rocks.<br>
+![An example](https://github.com/chenyz0601/DL-RockClassification/example.png)<br>
+## Model: Segmentation net + Adversarial net
+The model has too parts: Segmentation net and Adversarial net, follows the description in [Semantic Segmentation using Adversarial Networks](https://arxiv.org/pdf/1611.08408.pdf)<br> 
+Segmentation net is based on [U-net](https://arxiv.org/pdf/1505.04597.pdf).<br>
 ![the structure of U--net](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/u-net-architecture.png)<br>
+In this model, using a list [64,64,64,64] to control the number of filters of each encoder or decoder. And the last layer is using softmax for multi-class classification.<br>
+<br>
 Adversarial net takes the multi-band remote sensing image and corresponding label as input, outputs a number in range [0,1], which indicates the probability of that label is not produced by the segmentation net.<br> 
-use arcpy jupyter notebook API to open pre-processing.ipynb<br>
-each band is normalized by (-max)/(max-min)<br>
 
 ## Data preprocessing
-#### composite all useful bands into a multiband raster
+use arcpy jupyter notebook API to open pre-processing.ipynb<br>
+all images are re-sampled into 10m spatial resolution.<br>
+for simplicity, the large remote sensing images are cropped into small tiles with size of 256X256.<br>
+each band is normalized by (-max)/(max-min)<br>
+#### composite all useful bands into a multi-band raster
 | band  | mean |
 |-------|------|
 | 0     | Blue |
