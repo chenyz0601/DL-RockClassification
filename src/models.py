@@ -3,7 +3,7 @@ import re
 import keras
 from keras.optimizers import adam
 from keras.layers import Input
-from keras.models import load_model, Model
+from keras.models import Model
 from keras.callbacks import ModelCheckpoint
 from keras import backend as K
 from keras.losses import categorical_crossentropy
@@ -13,17 +13,25 @@ from .utils import TrainValTensorBoard
 
 class AdvSeg:
     
-    def __init__(self, num_bands=10,
+    def __init__(self, dtype='sent',
                  dim_width=256,
                  dim_height=256,
                  num_labels=10):
-        self.num_bands = num_bands
+        if dtype == 'sent':
+            self.dtype = dtype
+            self.num_bands = 10
+        elif dtype == 'sent_geo':
+            self.dtype = dtype
+            self.num_bands = 23
+        else:
+            raise ValueError('unknown dtype, should be sent or sent_geo!')
         self.dim_width = dim_width
         self.dim_height = dim_height
         self.num_labels = num_labels
         self.model = None
         self.model_type = None
         self.callbackList = None
+        self.scale = None
         self.init_epoch = 0
     
     def build_SegmentorNet(self, k_size = (3, 3),
@@ -56,7 +64,8 @@ class AdvSeg:
                            outputs=[pred_inp])
         self.model_type = 'AdvSeg'
         
-    def compile_model(self, scale=1e-2, lr=1e-3, verbose=True):
+    def compile_model(self, scale=1e-1, lr=1e-3, verbose=True):
+        print('compiling adam optimizer with learning rate {0}'.format(lr))
         optimizer = adam(lr=lr)
         if self.model_type == 'Segmentor':
             print('compiling Segmentor only ...')
@@ -68,7 +77,8 @@ class AdvSeg:
             if verbose:
                 print(self.model.summary())
         elif self.model_type == 'AdvSeg':
-            print('compiling Segmentor with Adversarial net ...')
+            self.scale = scale
+            print('compiling Segmentor + Adversarial net with lambda {0} ...'.format(self.scale))
             self.model.compile(loss=self.AdvSegLoss, optimizer=optimizer, metrics=['accuracy'])
             # print parameters of each layer
             if verbose:
@@ -94,17 +104,17 @@ class AdvSeg:
                                      use_multiprocessing=use_multiprocessing,
                                      initial_epoch=self.init_epoch)
     
-    def AdvSegLoss(self, y_true, y_pred, scale=1e-1):
+    def AdvSegLoss(self, y_true, y_pred):
         mce = K.mean(K.mean(categorical_crossentropy(y_true, y_pred), axis=-1), axis=-1)
         bce_true = K.log(self.adv_out_true)
         bce_fake = K.log(1. - self.adv_out_fake)
-        return mce-scale*(bce_true+bce_fake)
+        return mce-self.scale*(bce_true+bce_fake)
     
-    def build_callbackList(self, use_tfboard, log_dir='./logs'):        
+    def build_callbackList(self, use_tfboard=True):        
         if self.model_type == None:
-            raise ValueError('model is not built yet, please build 1D, 2D or 3D convnet model')
+            raise ValueError('model is not built yet, please build Segmentor or AdvSeg')
         else:
-            path = './{0}'.format(self.model_type)
+            path = './{0}/{1}'.format(self.model_type, self.dtype)
 
         # Model Checkpoints
         if not os.path.exists(path):
@@ -122,8 +132,8 @@ class AdvSeg:
                     
         # Tensorboard
         if use_tfboard:
-            path = log_dir+'/{0}'.format(self.model_type)
-            tensorboard = TrainValTensorBoard(log_dir=path)
+            tfpath = './logs/{0}/{1}'.format(self.model_type, self.dtype)
+            tensorboard = TrainValTensorBoard(log_dir=tfpath)
             self.callbackList.append(tensorboard)
         
     def load_checkpoint(self):
@@ -131,7 +141,7 @@ class AdvSeg:
         if self.model_type == None:
             raise ValueError('model is not built yet, please build Segmentor or AdvSeg!')
         else:
-            path = './{0}'.format(self.model_type)
+            path = './{0}/{1}'.format(self.model_type, self.dtype)
         try:
             checkfile = sorted(glob.glob(path+"/weights-*-*.hdf5"))[-1]
             self.model.load_weights(checkfile)

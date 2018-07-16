@@ -91,6 +91,7 @@ def SegmentorNet(inp, num_labels, n_ch_list, k_size, k_init, activation):
     return outp
     
 def AdversarialNet(inpX, inpY, ch_list, k_size, k_init, activation, br_ch):
+    print('building Adversarial convolutional net ...')
     if K.image_data_format() == 'channels_first':
         concat_axis = 1
         print('there might be a problem with softmax, please set to channels_last')

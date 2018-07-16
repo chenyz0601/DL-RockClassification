@@ -6,7 +6,7 @@ import keras
 
 class DataGenerator(keras.utils.Sequence):
     'Generates data for Keras'
-    def __init__(self, X_IDs, Y_IDs, batch_size=32, shuffle=True, dtype='all', intype='Seg'):
+    def __init__(self, X_IDs, Y_IDs, batch_size=32, shuffle=True, dtype='sent_geo', intype='Segmentor'):
         'Initialization'
         self.dtype = dtype
         self.intype = intype
@@ -34,12 +34,12 @@ class DataGenerator(keras.utils.Sequence):
         # Generate data
         X, y = self.__data_generation(X_IDs_temp, Y_IDs_temp)
         
-        if self.intype == 'Seg':
+        if self.intype == 'Segmentor':
             return X, y
         elif self.intype == 'AdvSeg':
             return [X, y], y
         else:
-            raise ValueError('invalid intype, should be Seg or AdvSeg')
+            raise ValueError('invalid intype, should be Segmentor or AdvSeg')
     
     def __getitem__(self, index):
         'Generate one batch of data'
@@ -53,12 +53,12 @@ class DataGenerator(keras.utils.Sequence):
         # Generate data
         X, y = self.__data_generation(X_IDs_temp, Y_IDs_temp)
         
-        if self.intype == 'Seg':
+        if self.intype == 'Segmentor':
             return X, y
         elif self.intype == 'AdvSeg':
             return [X, y], y
         else:
-            raise ValueError('invalid intype, should be Seg or AdvSeg')
+            raise ValueError('invalid intype, should be Segmentor or AdvSeg')
 
     def on_epoch_end(self):
         'Updates indexes after each epoch'
@@ -73,7 +73,7 @@ class DataGenerator(keras.utils.Sequence):
         # Initialization
         X_out = []
         Y_out = []
-        if self.dtype == 'all':
+        if self.dtype == 'sent_geo':
             for i in range(len(X_IDs_temp)):
                 X_out.append(np.transpose(np.load(X_IDs_temp[i]), [1,2,0]))
                 Y_out.append(np.transpose(np.load(Y_IDs_temp[i]), [1,2,0]))
@@ -82,7 +82,7 @@ class DataGenerator(keras.utils.Sequence):
                 X_out.append(np.transpose(np.load(X_IDs_temp[i])[:10,:,:], [1,2,0]))
                 Y_out.append(np.transpose(np.load(Y_IDs_temp[i]), [1,2,0]))
         else:
-            raise ValueError('unknown dtype, should be all or sent')
+            raise ValueError('unknown dtype, should be sent_geo or sent')
         return np.asarray(X_out), np.asarray(Y_out)
 
 class Data:
