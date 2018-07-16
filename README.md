@@ -1,11 +1,14 @@
 # DL-RockClassification
+## Segmentation net + Adversarial net
 deep learning for rock classification, which is similar with semantic segmentation in computer vision<br>
 This model has too parts: Segmentation net and Adversarial net, as described in [Semantic Segmentation using Adversarial Networks](https://arxiv.org/pdf/1611.08408.pdf)<br> 
 Segmentation net is based on [U-net](https://arxiv.org/pdf/1505.04597.pdf)<br>
-![the structure of U--net](https://www.google.de/search?q=u-net&rlz=1C1GCEA_enDE791DE791&source=lnms&tbm=isch&sa=X&ved=0ahUKEwi7u9fdsKPcAhVGL1AKHSEuAKMQ_AUICigB&biw=1689&bih=1031#imgrc=K-wr6kKnRJ4HPM:)<br>
+![the structure of U--net](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/u-net-architecture.png)<br>
 Adversarial net takes the multi-band remote sensing image and corresponding label as input, outputs a number in range [0,1], which indicates the probability of that label is not produced by the segmentation net.<br> 
 use arcpy jupyter notebook API to open pre-processing.ipynb<br>
 each band is normalized by (-max)/(max-min)<br>
+
+## Data preprocessing
 #### composite all useful bands into a multiband raster
 | band  | mean |
 |-------|------|
