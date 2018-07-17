@@ -1,9 +1,10 @@
 from keras.layers import Dense, Activation, ZeroPadding2D, BatchNormalization, Flatten, Conv2D, Conv2DTranspose
-from keras.layers import AveragePooling2D, MaxPooling2D, Dropout, Lambda, AlphaDropout
+from keras.layers import Input, AveragePooling2D, MaxPooling2D, Dropout, Lambda, AlphaDropout
 from keras.layers.merge import concatenate
 from keras import backend as K
+from keras.models import Model
 
-def SegmentorNet(inp, num_labels, n_ch_list, k_size, k_init, activation):
+def SegmentationNet(dim_width, dim_height, num_bands, num_labels, n_ch_list, k_size, k_init, activation):
     """
     input:
         num_bands, int, number of input channels
@@ -19,6 +20,7 @@ def SegmentorNet(inp, num_labels, n_ch_list, k_size, k_init, activation):
         print('there might be a problem with softmax, please set to channels_last')
     elif K.image_data_format() == 'channels_last':
         concat_axis = 3
+        inp = Input((dim_width, dim_height, num_bands))
     encoder = inp
     list_encoders = []
 
@@ -26,10 +28,10 @@ def SegmentorNet(inp, num_labels, n_ch_list, k_size, k_init, activation):
 #     if use_tfboard:
 #         tf.summary.image(name='input', tensor=inp)  
 
-    print('building Segmentor U-net ...')
+    print('building Segmentation U-net ...')
     print(n_ch_list)
     # encoders
-    with K.name_scope('SegmentorNet'):
+    with K.name_scope('SegmentationNet'):
         for l_idx, n_ch in enumerate(n_ch_list):
             with K.name_scope('Encoder_block_{0}'.format(l_idx)):
                 encoder = Conv2D(filters=n_ch,
@@ -88,15 +90,19 @@ def SegmentorNet(inp, num_labels, n_ch_list, k_size, k_init, activation):
     # summary image requires num of channels to be 1, 3 or 4
 #         if use_tfboard:
 #             tf.summary.image(name='output', tensor=outp)
-    return outp
+    return Model(inputs=[inp], outputs=[outp])
     
-def AdversarialNet(inpX, inpY, ch_list, k_size, k_init, activation, br_ch):
+def AdversarialNet(dim_width, dim_height, num_bands, num_labels, ch_list,
+                   k_size, k_init, activation, br_ch):
     print('building Adversarial convolutional net ...')
     if K.image_data_format() == 'channels_first':
         concat_axis = 1
         print('there might be a problem with softmax, please set to channels_last')
     elif K.image_data_format() == 'channels_last':
         concat_axis = 3
+        inpX = Input((dim_width, dim_height, num_bands))
+        inpY = Input((dim_width, dim_height, num_labels))
+    
     with K.name_scope('AdversarialNet'):
         with K.name_scope('img_input_conv'):
             X = Conv2D(filters=br_ch,
@@ -124,4 +130,4 @@ def AdversarialNet(inpX, inpY, ch_list, k_size, k_init, activation, br_ch):
                     encoder = MaxPooling2D(pool_size=(2,2))(encoder)
         encoder = Flatten()(encoder)
         outp = Dense(1, activation='sigmoid')(encoder)
-    return outp
+    return Model(inputs=[inpX, inpY], outputs=outp)

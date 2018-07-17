@@ -6,7 +6,7 @@ import keras
 
 class DataGenerator(keras.utils.Sequence):
     'Generates data for Keras'
-    def __init__(self, X_IDs, Y_IDs, batch_size=32, shuffle=True, dtype='sent_geo', intype='Segmentor'):
+    def __init__(self, X_IDs, Y_IDs, batch_size=32, shuffle=True, dtype='sent_geo', intype='Segmentation'):
         'Initialization'
         self.dtype = dtype
         self.intype = intype
@@ -34,12 +34,12 @@ class DataGenerator(keras.utils.Sequence):
         # Generate data
         X, y = self.__data_generation(X_IDs_temp, Y_IDs_temp)
         
-        if self.intype == 'Segmentor':
+        if self.intype == 'Segmentation':
             return X, y
         elif self.intype == 'AdvSeg':
             return [X, y], y
         else:
-            raise ValueError('invalid intype, should be Segmentor or AdvSeg')
+            raise ValueError('invalid intype, should be Segmentation or AdvSeg')
     
     def __getitem__(self, index):
         'Generate one batch of data'
@@ -53,12 +53,12 @@ class DataGenerator(keras.utils.Sequence):
         # Generate data
         X, y = self.__data_generation(X_IDs_temp, Y_IDs_temp)
         
-        if self.intype == 'Segmentor':
+        if self.intype == 'Segmentation':
             return X, y
         elif self.intype == 'AdvSeg':
             return [X, y], y
         else:
-            raise ValueError('invalid intype, should be Segmentor or AdvSeg')
+            raise ValueError('invalid intype, should be Segmentation or AdvSeg')
 
     def on_epoch_end(self):
         'Updates indexes after each epoch'

@@ -2,13 +2,13 @@ import glob
 import re
 import keras
 from keras.optimizers import adam
-from keras.layers import Input
-from keras.models import Model
 from keras.callbacks import ModelCheckpoint
 from keras import backend as K
 from keras.losses import categorical_crossentropy
+from keras.layers import Input
+from keras.models import Model
 import os, random
-from .networks import SegmentorNet, AdversarialNet
+from .networks import SegmentationNet, AdversarialNet
 from .utils import TrainValTensorBoard
 
 class AdvSeg:
@@ -33,15 +33,17 @@ class AdvSeg:
         self.callbackList = None
         self.scale = None
         self.init_epoch = 0
+        self.img_shape = (dim_width, dim_height, self.num_bands)
+        self.label_shape = (dim_width, dim_height, num_labels)
     
-    def build_SegmentorNet(self, k_size = (3, 3),
+    def build_SegmentationNet(self, k_size = (3, 3),
                            n_ch_list=[64, 64, 64, 64],
                            k_init='lecun_normal',
                            activation='selu'):
-        inp = Input((self.dim_width, self.dim_height, self.num_bands))
-        outp = SegmentorNet(inp, self.num_labels, n_ch_list, k_size, k_init, activation)
-        self.model = Model(inputs=[inp], outputs=[outp])
-        self.model_type = 'Segmentor'
+        self.model = SegmentationNet(self.dim_width, self.dim_height,
+                                     self.num_bands, self.num_labels,
+                                     n_ch_list, k_size, k_init, activation)
+        self.model_type = 'Segmentation'
     
     def build_AdvSegNet(self, k_size = (3, 3),
                         seg_ch_list=[64, 64, 64, 64],
@@ -49,26 +51,29 @@ class AdvSeg:
                         br_ch=64,
                         k_init='lecun_normal',
                         activation='selu'):
-        img_inp = Input((self.dim_width, self.dim_height, self.num_bands))
-        label_inp = Input((self.dim_width, self.dim_height, self.num_labels))
-        pred_inp = SegmentorNet(img_inp, self.num_labels, seg_ch_list, k_size, k_init, activation)
+        self.seg_model = SegmentationNet(self.dim_width, self.dim_height,
+                                         self.num_bands, self.num_labels,
+                                         seg_ch_list, k_size, k_init, activation)
+        img_inp = Input(self.img_shape)
+        label_inp = Input(self.label_shape)
+        pred_inp = self.seg_model(img_inp)
         
         # with K.variable_scope("AdversarialNet", reuse=True):
-        adv_model = Model(inputs=[img_inp, label_inp],
-                          outputs=AdversarialNet(img_inp, label_inp, adv_ch_list,
-                                                 k_size, k_init, activation, br_ch))
-        self.adv_out_true = adv_model([img_inp, label_inp])
-        self.adv_out_fake = adv_model([img_inp, pred_inp])
+        self.adv_model = AdversarialNet(self.dim_width, self.dim_height,
+                                        self.num_bands, self.num_labels, adv_ch_list,
+                                        k_size, k_init, activation, br_ch)
+        self.adv_out_true = self.adv_model([img_inp, label_inp])
+        self.adv_out_fake = self.adv_model([img_inp, pred_inp])
         
-        self.model = Model(inputs=[img_inp, label_inp],
-                           outputs=[pred_inp])
+        # self.model = Model(inputs=[img_inp, label_inp],
+        #                    outputs=[pred_inp])
         self.model_type = 'AdvSeg'
         
     def compile_model(self, scale=1e-1, lr=1e-3, verbose=True):
         print('compiling adam optimizer with learning rate {0}'.format(lr))
-        optimizer = adam(lr=lr)
-        if self.model_type == 'Segmentor':
-            print('compiling Segmentor only ...')
+        if self.model_type == 'Segmentation':
+            print('compiling Segmentation only ...')
+            optimizer = adam(lr=lr)
             loss = 'categorical_crossentropy'
             # build the whole computational graph with model, loss and optimizer
             # 'accuracy' is defaultly categorical_accuracy
@@ -78,11 +83,18 @@ class AdvSeg:
                 print(self.model.summary())
         elif self.model_type == 'AdvSeg':
             self.scale = scale
-            print('compiling Segmentor + Adversarial net with lambda {0} ...'.format(self.scale))
-            self.model.compile(loss=self.AdvSegLoss, optimizer=optimizer, metrics=['accuracy'])
+            seg_opt = adam(lr=lr)
+            adv_opt = adam(lr=lr)
+            
+            # compile
+            self.seg_model.compile(loss=self.SegLoss, optimizer=seg_opt)
+            self.adv_model.compile(loss=self.AdvLoss, optimizer=adv_opt)
+            
+            print('compiling Segmentation + Adversarial net with lambda {0} ...'.format(self.scale))
+            # self.model.compile(loss=loss, optimizer=seg_adv_opt, metrics=['accuracy'])
             # print parameters of each layer
             if verbose:
-                print(self.model.summary())
+                print(self.seg_model.summary())
         else:
             raise ValueError('no model to be compiled!')
                     
@@ -95,24 +107,48 @@ class AdvSeg:
                             num_epochs=10):
             self.build_callbackList(use_tfboard)
             print('fitting model {0}'.format(self.model_type))
-            self.model.fit_generator(generator=train_generator,
-                                     validation_data=valid_generator,
-                                     verbose=verbose,
-                                     epochs=self.init_epoch+num_epochs,
-                                     callbacks=self.callbackList,
-                                     workers=workers,
-                                     use_multiprocessing=use_multiprocessing,
-                                     initial_epoch=self.init_epoch)
+            if self.model_type == 'Segmentation':
+                self.model.fit_generator(generator=train_generator,
+                                         validation_data=valid_generator,
+                                         verbose=verbose,
+                                         epochs=self.init_epoch+num_epochs,
+                                         callbacks=self.callbackList,
+                                         workers=workers,
+                                         use_multiprocessing=use_multiprocessing,
+                                         initial_epoch=self.init_epoch)
+            elif self.model_type == 'AdvSeg':
+                for epoch in range(self.init_epoch, self.init_epoch+num_epochs):
+                    print('training Segmentation model ...')
+                    self.seg_model.fit_generator(generator=train_generator,
+                                             validation_data=valid_generator,
+                                             verbose=verbose,
+                                             epochs=epoch+1,
+                                             callbacks=self.callbackList,
+                                             workers=workers,
+                                             use_multiprocessing=use_multiprocessing,
+                                             initial_epoch=epoch)
+                    print('training Adversarial model ...')
+                    self.adv_model.fit_generator(generator=train_generator,
+                                             verbose=0,
+                                             epochs=epoch+1,
+                                             callbacks=None,
+                                             workers=workers,
+                                             use_multiprocessing=use_multiprocessing,
+                                             initial_epoch=epoch)
     
-    def AdvSegLoss(self, y_true, y_pred):
+    def SegLoss(self, y_true, y_pred):
         mce = K.mean(K.mean(categorical_crossentropy(y_true, y_pred), axis=-1), axis=-1)
-        bce_true = K.log(self.adv_out_true)
-        bce_fake = K.log(1. - self.adv_out_fake)
-        return mce-self.scale*(bce_true+bce_fake)
+        bce_fake = - K.log(self.adv_out_fake)
+        return mce + self.scale * bce_fake
+    
+    def AdvLoss(self, y_true, y_pred):
+        bce_true = - K.log(self.adv_out_true)
+        bce_fake = - K.log(1. - self.adv_out_fake)
+        return bce_true + bce_fake
     
     def build_callbackList(self, use_tfboard=True):        
         if self.model_type == None:
-            raise ValueError('model is not built yet, please build Segmentor or AdvSeg')
+            raise ValueError('model is not built yet, please build Segmentation or AdvSeg')
         else:
             path = './{0}/{1}'.format(self.model_type, self.dtype)
 
@@ -139,7 +175,7 @@ class AdvSeg:
     def load_checkpoint(self):
 
         if self.model_type == None:
-            raise ValueError('model is not built yet, please build Segmentor or AdvSeg!')
+            raise ValueError('model is not built yet, please build Segmentation or AdvSeg!')
         else:
             path = './{0}/{1}'.format(self.model_type, self.dtype)
         try:
