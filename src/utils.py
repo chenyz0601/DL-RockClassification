@@ -3,6 +3,12 @@ import glob, os
 import tensorflow as tf
 from keras.callbacks import TensorBoard
 
+
+def make_trainable(net, val):
+    # net.trainable = val
+    for l in net.layers:
+        l.trainable = val
+
 def split2Tiles(path, arr, x_size=256, y_size=256, suffix='block1'):
     xx, yy = arr.shape[1], arr.shape[2]
     x_num = int(xx/x_size)

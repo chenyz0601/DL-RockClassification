@@ -6,12 +6,20 @@ import keras
 
 class DataGenerator(keras.utils.Sequence):
     'Generates data for Keras'
-    def __init__(self, X_IDs, Y_IDs, batch_size=32, shuffle=True, dtype='sent_geo', intype='Segmentation'):
+    def __init__(self, X_IDs,
+                 Y_IDs,
+                 batch_size=32,
+                 shuffle=True,
+                 dtype='sent_geo',
+                 intype='Segmentation',
+                 pred_fn=None):
         'Initialization'
         self.dtype = dtype
         self.intype = intype
         self.X_IDs = X_IDs
         self.Y_IDs = Y_IDs
+        self.phase = 'SegmentationNet'
+        self.pred_fn = pred_fn
         if len(self.X_IDs) != len(self.Y_IDs):
             raise ValueError('imgs and labels are not matched')
         self.batch_size = batch_size
@@ -37,7 +45,17 @@ class DataGenerator(keras.utils.Sequence):
         if self.intype == 'Segmentation':
             return X, y
         elif self.intype == 'AdvSeg':
-            return [X, y], y
+            if self.phase == 'SegmentationNet':
+                y1 = np.ones([y.shape[0], 1])
+                return [X, y], [y, y1]
+            elif self.phase == 'AdversarialNet':
+                pred = self.pred_fn(X)
+                XX = np.concatenate([X, X], axis=0)
+                yy = np.concatenate([y, pred], axis=0)
+                y1 = np.ones([y.shape[0], 1])
+                y0 = np.zeros([y.shape[0], 1])
+                prob = np.concatenate([y1, y0], axis=0)
+                return [XX, yy], prob
         else:
             raise ValueError('invalid intype, should be Segmentation or AdvSeg')
     
@@ -56,14 +74,24 @@ class DataGenerator(keras.utils.Sequence):
         if self.intype == 'Segmentation':
             return X, y
         elif self.intype == 'AdvSeg':
-            return [X, y], y
+            if self.phase == 'SegmentationNet':
+                y1 = np.ones([y.shape[0], 1])
+                return [X, y], [y, y1]
+            elif self.phase == 'AdversarialNet':
+                pred = self.pred_fn(X)
+                XX = np.concatenate([X, X], axis=0)
+                yy = np.concatenate([y, pred], axis=0)
+                y1 = np.ones([y.shape[0], 1])
+                y0 = np.zeros([y.shape[0], 1])
+                prob = np.concatenate([y1, y0], axis=0)
+                return [XX, yy], prob
         else:
             raise ValueError('invalid intype, should be Segmentation or AdvSeg')
 
     def on_epoch_end(self):
         'Updates indexes after each epoch'
         self.indexes = np.arange(len(self.X_IDs))
-        if self.shuffle == True:
+        if self.shuffle:
             np.random.shuffle(self.indexes)
 
     def __data_generation(self, X_IDs_temp, Y_IDs_temp):

@@ -4,7 +4,7 @@ from keras.layers.merge import concatenate
 from keras import backend as K
 from keras.models import Model
 
-def SegmentationNet(dim_width, dim_height, num_bands, num_labels, n_ch_list, k_size, k_init, activation):
+def SegmentationNet(inp, num_labels, n_ch_list, k_size, k_init, activation):
     """
     input:
         num_bands, int, number of input channels
@@ -20,7 +20,6 @@ def SegmentationNet(dim_width, dim_height, num_bands, num_labels, n_ch_list, k_s
         print('there might be a problem with softmax, please set to channels_last')
     elif K.image_data_format() == 'channels_last':
         concat_axis = 3
-        inp = Input((dim_width, dim_height, num_bands))
     encoder = inp
     list_encoders = []
 
@@ -92,7 +91,7 @@ def SegmentationNet(dim_width, dim_height, num_bands, num_labels, n_ch_list, k_s
 #             tf.summary.image(name='output', tensor=outp)
     return Model(inputs=[inp], outputs=[outp])
     
-def AdversarialNet(dim_width, dim_height, num_bands, num_labels, ch_list,
+def AdversarialNet(inpX, inpY, ch_list,
                    k_size, k_init, activation, br_ch):
     print('building Adversarial convolutional net ...')
     if K.image_data_format() == 'channels_first':
@@ -100,9 +99,6 @@ def AdversarialNet(dim_width, dim_height, num_bands, num_labels, ch_list,
         print('there might be a problem with softmax, please set to channels_last')
     elif K.image_data_format() == 'channels_last':
         concat_axis = 3
-        inpX = Input((dim_width, dim_height, num_bands))
-        inpY = Input((dim_width, dim_height, num_labels))
-    
     with K.name_scope('AdversarialNet'):
         with K.name_scope('img_input_conv'):
             X = Conv2D(filters=br_ch,
