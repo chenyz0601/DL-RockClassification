@@ -2,7 +2,7 @@
 ## Problem description
 Deep learning for rock classification, which is similar with semantic segmentation in computer vision.<br>
 Input a multi-band remote sensing image, the purpose is to classify each pixel in the image into different classes of rocks.<br>
-![An example](https://github.com/chenyz0601/DL-RockClassification/blob/master/example.png)<br>
+![An example](https://github.com/chenyz0601/DL-RockClassification/blob/master/img/example.png)<br>
 ## Model: Segmentation net + Adversarial net
 The model has too parts: Segmentation net and Adversarial net, follows the description in [Semantic Segmentation using Adversarial Networks](https://arxiv.org/pdf/1611.08408.pdf)<br> 
 Segmentation net is based on [U-net](https://arxiv.org/pdf/1505.04597.pdf).<br>
@@ -11,6 +11,7 @@ In this model, using a list [64,64,64,64] to control the number of filters of ea
 Using AlphaDropout, and dropout rate is lower as network goes deeper, using Conv2DTranspose to do the deconvolution.<br>
 <br>
 Adversarial net takes the multi-band remote sensing image and corresponding label as input, outputs a number in range [0,1], which indicates the probability of that label is not produced by the segmentation net.<br> 
+![The structure of adversarial network:](https://github.com/chenyz0601/DL-RockClassification/blob/master/img/AdversarialNet.png)<br>
 
 ## Data preprocessing
 use arcpy jupyter notebook API to open pre-processing.ipynb<br>
