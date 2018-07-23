@@ -148,15 +148,19 @@ class AdvSeg:
                             workers=1,
                             use_multiprocessing=False,
                             use_tfboard=True,
-                            num_epochs=10,
+                            adv_epochs=10,
+                            adv_steps_per_epoch=10,
+                            seg_epochs=10,
+                            seg_steps_per_epoch=10,
                             alt_num=10):
             print('fitting model {0}'.format(self.model_type))
             if self.model_type == 'Segmentation':
                 cl = self.build_callbackList(use_tfboard, 'val_acc')
                 self.seg_model.fit_generator(generator=train_generator,
+                                             steps_per_epoch=seg_steps_per_epoch,
                                              validation_data=valid_generator,
                                              verbose=verbose,
-                                             epochs=self.init_epoch+num_epochs,
+                                             epochs=self.init_epoch+seg_epochs,
                                              callbacks=cl,
                                              workers=workers,
                                              use_multiprocessing=use_multiprocessing,
@@ -172,25 +176,27 @@ class AdvSeg:
                     train_generator.phase = 'AdversarialNet'
                     valid_generator.phase = 'AdversarialNet'
                     self.adv_model.fit_generator(generator=train_generator,
+                                                 steps_per_epoch=adv_steps_per_epoch,
                                                  validation_data=valid_generator,
                                                  verbose=verbose,
-                                                 epochs=(i+1)*num_epochs,
+                                                 epochs=(i+1)*adv_epochs,
                                                  callbacks=adv_cl,
                                                  workers=workers,
                                                  use_multiprocessing=use_multiprocessing,
-                                                 initial_epoch=i*num_epochs)
+                                                 initial_epoch=i*adv_epochs)
                     print('round {0} fitting seg_model'.format(i+1))
                     train_generator.phase = 'SegmentationNet'
                     valid_generator.phase = 'SegmentationNet'
                     self.adv_seg_model.fit_generator(generator=train_generator,
+                                                     steps_per_epoch=seg_steps_per_epoch,
                                                      validation_data=valid_generator,
                                                      verbose=verbose,
-                                                     epochs=(i+1)*num_epochs,
+                                                     epochs=(i+1)*seg_epochs,
                                                      callbacks=seg_cl,
                                                      workers=workers,
                                                      use_multiprocessing=
                                                      use_multiprocessing,
-                                                     initial_epoch=i*num_epochs)
+                                                     initial_epoch=i*seg_epochs)
     
     def build_callbackList(self, use_tfboard=True, monitor=None, phase=None):
         if self.model_type == None:
