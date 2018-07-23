@@ -17,11 +17,11 @@ Adversarial net takes the multi-band remote sensing image and corresponding labe
 #### Train phase: adversarial network
 To train the adversarial neural network, we minimize the loss:<br>
 $$loss_a(\theta_a) = \sum_{n=1}^{N}l_{bce}(a(X_n, Y_n), 1) + l_{bce}(a(X_n, s(X_n)), 0),$$
-where $l_{bce} is the binary crossentropy$, $a(x,y)$ is the adversarial network, $s(x)$ is the segmentation network, $\theta_a$ means the parameters of adversarial network. In this training phase, we try to optimize adversarial network to discriminate the ground truth and prediction from segmentation network. And the parameters of segmentation network $\theta_s$ are fixed during this phase.<br>
+where $l_{bce}$ is the binary crossentropy, $a(x,y)$ is the adversarial network, $s(x)$ is the segmentation network, $\theta_a$ means the parameters of adversarial network. In this training phase, we try to optimize adversarial network to discriminate the ground truth and prediction from segmentation network. And the parameters of segmentation network $\theta_s$ are fixed during this phase.<br>
 #### Training phase: segmentation network
 To train the segmentation neural network, we minimize the loss:<br>
 $$loss_s(\theta_s) = \sum_{n=1}^{N}l_{cce}(s(X_n), Y_n) + \lambda l_{bce}(a(X_n, s(X_n)), 1),$$
-where $l_{cce} is the categorical crossentropy$, $\lambda$ is the weight to balance two part of this loss, $\theta_s$ means the parameters of segmentation network. In this training phase, we try to optimize segmentation network to predict the ground truth distribution and also improve the prediction to fool the adversarial network. And the parameters of adversarial network $\theta_a$ are fixed during this phase.<br>
+where $l_{cce}$ is the categorical crossentropy, $\lambda$ is the weight to balance two part of this loss, $\theta_s$ means the parameters of segmentation network. In this training phase, we try to optimize segmentation network to predict the ground truth distribution and also improve the prediction to fool the adversarial network. And the parameters of adversarial network $\theta_a$ are fixed during this phase.<br>
 ## Data preprocessing
 use arcpy jupyter notebook API to open pre-processing.ipynb<br>
 all images are re-sampled into 10m spatial resolution.<br>
