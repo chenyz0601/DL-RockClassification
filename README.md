@@ -1,5 +1,8 @@
+<script type="text/javascript" async
+src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js? 
+config=TeX-MML-AM_CHTML"
+</script>
 # DL-RockClassification
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
 ## Problem description
 Deep learning for rock classification, which is similar with semantic segmentation in computer vision.<br>
 Input a multi-band remote sensing image, the purpose is to classify each pixel in the image into different classes of rocks.<br>
