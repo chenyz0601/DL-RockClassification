@@ -12,16 +12,16 @@ In this model, using a list to control the number of filters of each encoder or 
 Using AlphaDropout, and dropout rate is lower as network goes deeper, using Conv2DTranspose to do the deconvolution.<br>
 <br>
 #### Discriminator
-Adversarial net takes the multi-band remote sensing image and corresponding label as input, outputs a number in range [0,1], which indicates the probability of that label is not produced by the segmentation net.<br> 
+Discriminator takes the multi-band remote sensing image and corresponding label as input, outputs a number in range [0,1], which indicates the probability of that the input label is not produced by the Generator.<br> 
 ![The structure of adversarial network:](https://github.com/chenyz0601/DL-RockClassification/blob/master/img/D.png)<br>
-#### Train phase: adversarial network
-To train the adversarial neural network, we minimize the loss:<br>
-$$loss_a(\theta_a) = \sum_{n=1}^{N}l_{bce}(a(X_n, Y_n), 1) + l_{bce}(a(X_n, s(X_n)), 0),$$
-where $l_{bce}$ is the binary crossentropy, $a(x,y)$ is the adversarial network, $s(x)$ is the segmentation network, $\theta_a$ means the parameters of adversarial network. In this training phase, we try to optimize adversarial network to discriminate the ground truth and prediction from segmentation network. And the parameters of segmentation network $\theta_s$ are fixed during this phase.<br>
-#### Training phase: segmentation network
-To train the segmentation neural network, we minimize the loss:<br>
-$$loss_s(\theta_s) = \sum_{n=1}^{N}l_{cce}(s(X_n), Y_n) + \lambda l_{bce}(a(X_n, s(X_n)), 1),$$
-where $l_{cce}$ is the categorical crossentropy, $\lambda$ is the weight to balance two part of this loss, $\theta_s$ means the parameters of segmentation network. In this training phase, we try to optimize segmentation network to predict the ground truth distribution and also improve the prediction to fool the adversarial network. And the parameters of adversarial network $\theta_a$ are fixed during this phase.<br>
+#### Phase: Train Discriminator
+To train discriminator, we minimize the loss:<br>
+$$loss_d(\theta_d) = \sum_{n=1}^{N}l_{bce}(D(X_n, Y_n), 1) + l_{bce}(D(X_n, G(X_n)), 0),$$
+where $l_{bce}$ is the binary crossentropy, $D(x,y)$ is the discriminator, $G(x)$ is the generator, $\theta_d$ means the parameters of dicriminator. In this training phase, we try to trian discriminator to recognize the ground truth label from prediction of generator. And the parameters of generator $\theta_g$ are fixed during this phase.<br>
+#### Phase: Train Generator
+To train the generator, we minimize the loss:<br>
+$$loss_g(\theta_g) = \sum_{n=1}^{N}l_{cce}(G(X_n), Y_n) + \lambda l_{bce}(D(X_n, G(X_n)), 1),$$
+where $l_{cce}$ is the categorical crossentropy, $\lambda$ is the weight to balance two part of this loss, $\theta_g$ means the parameters of generator. In this training phase, we try to optimize generator to predict the ground truth distribution and also improve the prediction to fool the discriminator. And the parameters of discriminator $\theta_d$ are fixed during this phase.<br>
 ## Data preprocessing
 use arcpy jupyter notebook API to open pre-processing.ipynb<br>
 all images are re-sampled into 10m spatial resolution.<br>
