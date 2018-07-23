@@ -1,7 +1,3 @@
-<script type="text/javascript" async
-src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js? 
-config=TeX-MML-AM_CHTML"
-</script>
 # DL-RockClassification
 ## Problem description
 Deep learning for rock classification, which is similar with semantic segmentation in computer vision.<br>
