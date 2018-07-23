@@ -5,14 +5,23 @@ Input a multi-band remote sensing image, the purpose is to classify each pixel i
 ![An example](https://github.com/chenyz0601/DL-RockClassification/blob/master/img/example.png)<br>
 ## Model: Segmentation net + Adversarial net
 The model has too parts: Segmentation net and Adversarial net, follows the description in [Semantic Segmentation using Adversarial Networks](https://arxiv.org/pdf/1611.08408.pdf)<br> 
+#### Segmentation Neural Network
 Segmentation net is based on [U-net](https://arxiv.org/pdf/1505.04597.pdf).<br>
 ![the structure of U--net](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/u-net-architecture.png)<br>
-In this model, using a list [64,64,64,64] to control the number of filters of each encoder or decoder. And the last layer is using softmax for multi-class classification.<br>
+In this model, using a list to control the number of filters of each encoder or decoder. And the last layer is using softmax for multi-class classification.<br>
 Using AlphaDropout, and dropout rate is lower as network goes deeper, using Conv2DTranspose to do the deconvolution.<br>
 <br>
+#### Adversarial Neural Network
 Adversarial net takes the multi-band remote sensing image and corresponding label as input, outputs a number in range [0,1], which indicates the probability of that label is not produced by the segmentation net.<br> 
 ![The structure of adversarial network:](https://github.com/chenyz0601/DL-RockClassification/blob/master/img/AdversarialNet.png)<br>
-
+#### Train phase: adversarial network
+To train the adversarial neural network, we minimize the loss:<br>
+$$loss_a(\theta_a) = \sum_{n=1}^{N}l_{bce}(a(X_n, Y_n), 1) + l_{bce}(a(X_n, s(X_n)), 0),$$
+where $l_{bce} is the binary crossentropy$, $a(x,y)$ is the adversarial network, $s(x)$ is the segmentation network, $\theta_a$ means the parameters of adversarial network. In this training phase, we try to optimize adversarial network to discriminate the ground truth and prediction from segmentation network. And the parameters of segmentation network $\theta_s$ are fixed during this phase.<br>
+#### Training phase: segmentation network
+To train the segmentation neural network, we minimize the loss:<br>
+$$loss_s(\theta_s) = \sum_{n=1}^{N}l_{cce}(s(X_n), Y_n) + \lambda l_{bce}(a(X_n, s(X_n)), 1),$$
+where $l_{cce} is the categorical crossentropy$, $\lambda$ is the weight to balance two part of this loss, $\theta_s$ means the parameters of segmentation network. In this training phase, we try to optimize segmentation network to predict the ground truth distribution and also improve the prediction to fool the adversarial network. And the parameters of adversarial network $\theta_a$ are fixed during this phase.<br>
 ## Data preprocessing
 use arcpy jupyter notebook API to open pre-processing.ipynb<br>
 all images are re-sampled into 10m spatial resolution.<br>
