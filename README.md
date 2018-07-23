@@ -7,13 +7,13 @@ Input a multi-band remote sensing image, the purpose is to classify each pixel i
 The model has too parts: Generator(a segmentation network) and Discriminator(an adversarial network)<br>
 #### Generator
 Generator follows the design of [U-net](https://arxiv.org/pdf/1505.04597.pdf).<br>
-![the structure of U--net]()<br>
+![the structure of U--net](https://github.com/chenyz0601/DL-RockClassification/blob/master/img/G.png)<br>
 In this model, using a list to control the number of filters of each encoder or decoder. And the last layer is using softmax for multi-class classification.<br>
 Using AlphaDropout, and dropout rate is lower as network goes deeper, using Conv2DTranspose to do the deconvolution.<br>
 <br>
 #### Discriminator
 Adversarial net takes the multi-band remote sensing image and corresponding label as input, outputs a number in range [0,1], which indicates the probability of that label is not produced by the segmentation net.<br> 
-![The structure of adversarial network:](https://github.com/chenyz0601/DL-RockClassification/blob/master/img/AdversarialNet.png)<br>
+![The structure of adversarial network:](https://github.com/chenyz0601/DL-RockClassification/blob/master/img/D.png)<br>
 #### Train phase: adversarial network
 To train the adversarial neural network, we minimize the loss:<br>
 $$loss_a(\theta_a) = \sum_{n=1}^{N}l_{bce}(a(X_n, Y_n), 1) + l_{bce}(a(X_n, s(X_n)), 0),$$
