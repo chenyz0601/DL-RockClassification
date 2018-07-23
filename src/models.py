@@ -31,7 +31,6 @@ class AdvSeg:
         self.adv_model = None
         self.adv_seg_model = None
         self.model_type = None
-        self.callbackList = None
         self.init_epoch = 0
         self.img_shape = (dim_width, dim_height, self.num_bands)
         self.label_shape = (dim_width, dim_height, num_labels)
@@ -84,14 +83,17 @@ class AdvSeg:
                                         k_size,
                                         k_init,
                                         activation,
-                                        br_ch)
+                                        br_ch,
+                                        'adv_model')
                 
         # make adversarial model not trainable and create the freezed adv_model
         make_trainable(self.adv_model, False)
-        adv_freeze = Model(inputs=self.adv_model.inputs, outputs=self.adv_model.outputs)
+        adv_freeze = Model(inputs=self.adv_model.inputs,
+                           outputs=self.adv_model.outputs,
+                           name='adv_model_freeze')
         adv_freeze.compile(adv_opt, 
-                               loss='binary_crossentropy',  
-                               metrics=['accuracy'])
+                           loss='binary_crossentropy',  
+                           metrics=['accuracy'])
         
         # build up segmentation model
         self.seg_model = SegmentationNet(img_inp,
@@ -99,14 +101,15 @@ class AdvSeg:
                                          seg_ch_list,
                                          k_size,
                                          k_init,
-                                         activation)
+                                         activation, 
+                                         'seg_model')
         
         # compile segmentation model
         self.seg_model.compile(seg_opt,
                                loss='categorical_crossentropy',
                                metrics=['accuracy'])
         if verbose:
-            print('summary of segmentation net:')
+            print('summary of {0}:'.format(self.seg_model.name))
             print(self.seg_model.summary())
         
         # get the prediction of seg_model 
@@ -116,16 +119,18 @@ class AdvSeg:
         prob = adv_freeze([img_inp, pred])
         
         # stack seg and adv model
-        self.adv_seg_model = Model(inputs=[img_inp, label_inp], outputs=[pred, prob])
+        self.adv_seg_model = Model(inputs=[img_inp, label_inp],
+                                   outputs=[pred, prob], 
+                                   name='adv_seg_model')
         
         # compile stacked seg and adv model
         self.adv_seg_model.compile(seg_opt, 
                                    loss=['categorical_crossentropy',
                                          'binary_crossentropy'], 
                                    loss_weights=[1., scale], 
-                                   metrics=['accuracy', 'accuracy'])
+                                   metrics=['accuracy'])
         if verbose:
-            print('summary of adv+seg net:')
+            print('summary of {0}:'.format(self.adv_seg_model.name))
             print(self.adv_seg_model.summary())
         
         # compile adversarial model
@@ -134,7 +139,7 @@ class AdvSeg:
                                loss='binary_crossentropy',  
                                metrics=['accuracy'])            
         if verbose:
-            print('summary of adversarial net:')
+            print('summary of {0}:'.format(self.adv_model.name))
             print(self.adv_model.summary())
                     
     def fit_model_generator(self, train_generator,
@@ -147,67 +152,78 @@ class AdvSeg:
                             alt_num=10):
             print('fitting model {0}'.format(self.model_type))
             if self.model_type == 'Segmentation':
-                self.build_callbackList(use_tfboard, 'val_acc')
+                cl = self.build_callbackList(use_tfboard, 'val_acc')
                 self.seg_model.fit_generator(generator=train_generator,
                                              validation_data=valid_generator,
                                              verbose=verbose,
                                              epochs=self.init_epoch+num_epochs,
-                                             callbacks=self.callbackList,
+                                             callbacks=cl,
                                              workers=workers,
                                              use_multiprocessing=use_multiprocessing,
                                              initial_epoch=self.init_epoch)
             elif self.model_type == 'AdvSeg':
-                self.build_callbackList(use_tfboard, 'val_model_2_acc')
+                adv_cl = self.build_callbackList(use_tfboard=use_tfboard,
+                                                 phase='AdversarialNet')
+                seg_cl = self.build_callbackList(use_tfboard=use_tfboard,
+                                                 monitor='val_seg_model_acc', 
+                                                 phase='SegmentationNet')
                 for i in range(alt_num):
-                    print('round {0} fitting adv_model'.format(i))
+                    print('round {0} fitting adv_model'.format(i+1))
                     train_generator.phase = 'AdversarialNet'
                     valid_generator.phase = 'AdversarialNet'
                     self.adv_model.fit_generator(generator=train_generator,
                                                  validation_data=valid_generator,
                                                  verbose=verbose,
-                                                 epochs=self.init_epoch+num_epochs,
-                                                 callbacks=self.callbackList[-1],
+                                                 epochs=(i+1)*num_epochs,
+                                                 callbacks=adv_cl,
                                                  workers=workers,
                                                  use_multiprocessing=use_multiprocessing,
-                                                 initial_epoch=self.init_epoch)
-                    print('round {0} fitting seg_model'.format(i))
+                                                 initial_epoch=i*num_epochs)
+                    print('round {0} fitting seg_model'.format(i+1))
                     train_generator.phase = 'SegmentationNet'
                     valid_generator.phase = 'SegmentationNet'
                     self.adv_seg_model.fit_generator(generator=train_generator,
                                                      validation_data=valid_generator,
                                                      verbose=verbose,
-                                                     epochs=self.init_epoch+num_epochs,
-                                                     callbacks=self.callbackList,
+                                                     epochs=(i+1)*num_epochs,
+                                                     callbacks=seg_cl,
                                                      workers=workers,
                                                      use_multiprocessing=
                                                      use_multiprocessing,
-                                                     initial_epoch=self.init_epoch)
+                                                     initial_epoch=i*num_epochs)
     
-    def build_callbackList(self, use_tfboard=True, monitor='val_acc'):
+    def build_callbackList(self, use_tfboard=True, monitor=None, phase=None):
         if self.model_type == None:
             raise ValueError('model is not built yet, please build Segmentation or AdvSeg')
         else:
             path = './{0}/{1}'.format(self.model_type, self.dtype)
 
         # Model Checkpoints
-        if not os.path.exists(path):
-            os.makedirs(path)
-        filepath=path+'/weights-{epoch:02d}-{val_acc:.2f}.hdf5'
-        checkpoint = ModelCheckpoint(filepath,
-                                     monitor=monitor,
-                                     verbose=1,
-                                     save_best_only=True,
-                                     save_weights_only=True,
-                                     mode='max')
+        if monitor is None:
+            callbackList = []
+        else:
+            if not os.path.exists(path):
+                os.makedirs(path)
+            filepath=path+'/weights-{epoch:02d}-{'+'{0}'.format(monitor)+':.2f}.hdf5'
+            checkpoint = ModelCheckpoint(filepath,
+                                         monitor=monitor,
+                                         verbose=1,
+                                         save_best_only=True,
+                                         save_weights_only=True,
+                                         mode='max')
 
-        # Bring all the callbacks together into a python list
-        self.callbackList = [checkpoint]
+            # Bring all the callbacks together into a python list
+            callbackList = [checkpoint]
                     
         # Tensorboard
         if use_tfboard:
-            tfpath = './logs/{0}/{1}'.format(self.model_type, self.dtype)
+            if phase is None:
+                tfpath = './logs/{0}/{1}'.format(self.model_type, self.dtype)
+            else:
+                tfpath = './logs/{0}/{1}/{2}'.format(self.model_type, phase, self.dtype)
             tensorboard = TrainValTensorBoard(log_dir=tfpath)
-            self.callbackList.append(tensorboard)
+            callbackList.append(tensorboard)
+        return callbackList
         
     def load_checkpoint(self):
         if self.model_type == None:

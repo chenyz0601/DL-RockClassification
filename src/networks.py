@@ -4,7 +4,7 @@ from keras.layers.merge import concatenate
 from keras import backend as K
 from keras.models import Model
 
-def SegmentationNet(inp, num_labels, n_ch_list, k_size, k_init, activation):
+def SegmentationNet(inp, num_labels, n_ch_list, k_size, k_init, activation, name):
     """
     input:
         num_bands, int, number of input channels
@@ -79,7 +79,6 @@ def SegmentationNet(inp, num_labels, n_ch_list, k_size, k_init, activation):
                                           kernel_initializer=k_init)(decoder)
 
         # output layer should be softmax
-        # instead of using Conv2DTranspose, Dense layer could also be tried
         outp = Conv2DTranspose(filters=num_labels,
                                kernel_size=k_size,
                                activation='softmax',
@@ -89,10 +88,9 @@ def SegmentationNet(inp, num_labels, n_ch_list, k_size, k_init, activation):
     # summary image requires num of channels to be 1, 3 or 4
 #         if use_tfboard:
 #             tf.summary.image(name='output', tensor=outp)
-    return Model(inputs=[inp], outputs=[outp])
+    return Model(inputs=[inp], outputs=[outp], name=name)
     
-def AdversarialNet(inpX, inpY, ch_list,
-                   k_size, k_init, activation, br_ch):
+def AdversarialNet(inpX, inpY, ch_list, k_size, k_init, activation, br_ch, name):
     print('building Adversarial convolutional net ...')
     if K.image_data_format() == 'channels_first':
         concat_axis = 1
@@ -126,4 +124,4 @@ def AdversarialNet(inpX, inpY, ch_list,
                     encoder = MaxPooling2D(pool_size=(2,2))(encoder)
         encoder = Flatten()(encoder)
         outp = Dense(1, activation='sigmoid')(encoder)
-    return Model(inputs=[inpX, inpY], outputs=outp)
+    return Model(inputs=[inpX, inpY], outputs=outp, name=name)
