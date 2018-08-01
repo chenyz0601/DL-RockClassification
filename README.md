@@ -27,6 +27,10 @@ use arcpy jupyter notebook API to open pre-processing.ipynb<br>
 all images are re-sampled into 10m spatial resolution.<br>
 for simplicity, the large remote sensing images are cropped into small tiles with size of 256X256.<br>
 each band is normalized by (-max)/(max-min)<br>
+#### ASTER data
+Time: 01/04/2018 - 01/05/2018<br>
+The ASTER L2 Surface Reflectance is a multi-file product that contains atmospherically corrected data for both the Visible Near-Infrared (VNIR) and Shortwave Infrared (SWIR) sensors.<br>
+The ASTER L2 Surface Emissivity is an on-demand product generated using the five thermal infrared (TIR) bands (acquired either during the day or night time) between 8 and 12 µm spectral range.<br>
 #### composite all useful bands into a multi-band raster
 | band  | mean |
 |-------|------|
