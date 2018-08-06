@@ -70,6 +70,9 @@ Cloud coverage: 0.0%-0.0%<br>
 |11  |1.6100                |60                   |
 |12  |2.1900                |20                   |
 #### Geophysical data
+#### Calculate NDVI
+$$NDVI = \frac{NIR - VIS}{NIR + VIS}$$
+using Sentinel-2A band 4 as VIS and band 6 as NIR<br>
 #### composite all useful bands into a multi-band raster
 | band  | mean |
 |-------|------|
