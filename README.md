@@ -27,10 +27,47 @@ use arcpy jupyter notebook API to open pre-processing.ipynb<br>
 all images are re-sampled into 10m spatial resolution.<br>
 for simplicity, the large remote sensing images are cropped into small tiles with size of 256X256.<br>
 each band is normalized by (-max)/(max-min)<br>
-#### ASTER data
+#### ASTER
+As an advanced multispectral sensor launched onboard Terra spacecraft in December 1999, ASTER covers a broad ragne of spectral region with 14 spetral bands, including three VNIR bands with 15m spatial resoltion, six SWIR bands with 30m spatial resolution, and fice TIR bands with 90m spatial resolution.<br>
+Time: 01/04/2014 - 01/06/2014<br>
+Cloud coverage: 0.0%-0.0%<br>
+|Band|Central Wavelength(nm)|Spatial Resolution(m)|
+|----|----------------------|---------------------|
+|1   |0.5560                |15                   |
+|2   |0.6610                |15                   |
+|3N  |0.8070                |15                   |
+|3B  |0.8070                |15                   |
+|4   |1.6560                |30                   |
+|5   |2.1670                |30                   |
+|6   |2.2090                |30                   |
+|7   |2.2620                |30                   |
+|8   |2.3360                |30                   |
+|9   |2.4000                |30                   |
+|10  |8.2910                |90                   |
+|11  |8.6340                |90                   |
+|12  |9.0750                |90                   |
+|13  |10.6570               |90                   |
+|14  |11.3180               |90                   |
+#### Sentinel-2A
+The Sentinel-2A image contains 13 spectral bands in the VNIR and SWIR spectral range, with four bands at 10m, six bands at 20m, and three atmospheric correction bands at 60m spatial resolution. The cloud free image was automatically atmospherically corrected using the Sentinel Application Platform software package provided by ESA.<br>
 Time: 01/04/2018 - 01/05/2018<br>
-The ASTER L2 Surface Reflectance is a multi-file product that contains atmospherically corrected data for both the Visible Near-Infrared (VNIR) and Shortwave Infrared (SWIR) sensors.<br>
-The ASTER L2 Surface Emissivity is an on-demand product generated using the five thermal infrared (TIR) bands (acquired either during the day or night time) between 8 and 12 µm spectral range.<br>
+Cloud coverage: 0.0%-0.0%<br>
+|Band|Central Wavelength(nm)|Spatial Resolution(m)|
+|----|----------------------|---------------------|
+|1   |0.4430                |60                   |
+|2   |0.4900                |10                   |
+|3   |0.5600                |10                   |
+|4   |0.6650                |10                   |
+|5   |0.7050                |10                   |
+|6   |0.7400                |20                   |
+|7   |0.7830                |20                   |
+|8   |0.8420                |10                   |
+|8A  |0.8650                |20                   |
+|9   |0.9450                |60                   |
+|10  |1.3750                |60                   |
+|11  |1.6100                |60                   |
+|12  |2.1900                |20                   |
+#### Geophysical data
 #### composite all useful bands into a multi-band raster
 | band  | mean |
 |-------|------|
