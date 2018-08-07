@@ -4,7 +4,7 @@ Deep learning for rock classification, which is similar with semantic segmentati
 Input a multi-band remote sensing image, the purpose is to classify each pixel in the image into different classes of rocks.<br>
 ![An example](https://github.com/chenyz0601/DL-RockClassification/blob/master/img/example.png)<br>
 ## Model: Conditional GAN
-The model has too parts: Generator(a segmentation network) and Discriminator(an adversarial network)<br>
+The model has to parts: Generator(a segmentation network) and Discriminator(an adversarial network)<br>
 #### Generator
 Generator follows the design of [U-net](https://arxiv.org/pdf/1505.04597.pdf).<br>
 ![the structure of U--net](https://github.com/chenyz0601/DL-RockClassification/blob/master/img/G.png)<br>
