@@ -4,7 +4,7 @@ from keras.layers.merge import concatenate
 from keras import backend as K
 from keras.models import Model
 
-def SegmentationNet(inp, num_labels, n_ch_list, k_size, k_init, activation, name):
+def SegmentationNet(inp, num_labels, n_ch_list, k_size, k_init, activation, name=None):
     """
     input:
         num_bands, int, number of input channels
