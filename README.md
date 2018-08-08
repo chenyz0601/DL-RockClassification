@@ -101,7 +101,7 @@ using Sentinel-2A band 4 as VIS and band 6 as NIR<br>
 | 22    | TH over K |
 
 #### layer number and rock type
-| Layer | Rock |
+| Layer | Rock  |
 |-------|------|
 | 0     | Vegetation|
 | 1     | Unkown Rocks|
