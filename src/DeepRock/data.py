@@ -101,13 +101,17 @@ class DataGenerator(keras.utils.Sequence):
         # Initialization
         X_out = []
         Y_out = []
-        if self.dtype == 'sent_geo':
+        if self.dtype == 'sent_ast_geo':
             for i in range(len(X_IDs_temp)):
                 X_out.append(np.transpose(np.load(X_IDs_temp[i]), [1,2,0]))
                 Y_out.append(np.transpose(np.load(Y_IDs_temp[i]), [1,2,0]))
         elif self.dtype == 'sent':
             for i in range(len(X_IDs_temp)):
                 X_out.append(np.transpose(np.load(X_IDs_temp[i])[:10,:,:], [1,2,0]))
+                Y_out.append(np.transpose(np.load(Y_IDs_temp[i]), [1,2,0]))
+        elif self.dtype == 'sent_ast':
+            for i in range(len(X_IDs_temp)):
+                X_out.append(np.transpose(np.load(X_IDs_temp[i])[:16,:,:], [1,2,0]))
                 Y_out.append(np.transpose(np.load(Y_IDs_temp[i]), [1,2,0]))
         else:
             raise ValueError('unknown dtype, should be sent_geo or sent')
