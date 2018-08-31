@@ -92,13 +92,13 @@ using Sentinel-2A band 4 as VIS and band 6 as NIR<br>
 | 13    | U |
 | 14    | U2 |
 | 15    | magnetic |
-| 16    | U over K |
-| 17    | U over TH |
-| 18    | K over TH |
-| 19    | K over U |
+| 16    | K over TH |
+| 17    | K over U |
+| 18    | TH over K |
+| 19    | TH over U |
 | 20    | U2 over TH |
-| 21    | TH over U |
-| 22    | TH over K |
+| 21    | U over K |
+| 22    | U over TH |
 
 #### layer number and rock type
 | Layer | Rock  |
