@@ -157,10 +157,13 @@ class AdvSeg:
                             adv_steps_per_epoch=10,
                             seg_epochs=10,
                             seg_steps_per_epoch=10,
-                            num_round=1):
+                            num_round=1, 
+                            save_weights=True):
             print('fitting model {0}'.format(self.model_type))
             if self.model_type == 'Segmentation':
-                cl = self.build_callbackList(use_tfboard, 'val_acc')
+                cl = self.build_callbackList(use_tfboard=use_tfboard, 
+                                             monitor='val_acc', 
+                                             save=save_weights)
                 self.seg_model.fit_generator(generator=train_generator,
                                              steps_per_epoch=seg_steps_per_epoch,
                                              validation_data=valid_generator,
@@ -172,10 +175,12 @@ class AdvSeg:
                                              initial_epoch=self.init_epoch)
             elif self.model_type == 'AdvSeg':
                 adv_cl = self.build_callbackList(use_tfboard=use_tfboard,
-                                                 phase='AdversarialNet')
+                                                 phase='AdversarialNet',
+                                                 save=save_weights)
                 seg_cl = self.build_callbackList(use_tfboard=use_tfboard,
                                                  monitor='val_seg_model_acc', 
-                                                 phase='SegmentationNet')
+                                                 phase='SegmentationNet',
+                                                 save=save_weights)
                 for i in range(num_round):
                     print('round {0} fitting seg_model'.format(i))
                     train_generator.phase = 'SegmentationNet'
@@ -203,7 +208,7 @@ class AdvSeg:
                                                  use_multiprocessing=use_multiprocessing,
                                                  initial_epoch=i*adv_epochs)
     
-    def build_callbackList(self, use_tfboard=True, monitor=None, phase=None):
+    def build_callbackList(self, use_tfboard=True, monitor=None, phase=None, save=True):
         if self.model_type == None:
             raise ValueError('model is not built yet, please build Segmentation or AdvSeg')
         else:
@@ -219,8 +224,8 @@ class AdvSeg:
             checkpoint = ModelCheckpoint(filepath,
                                          monitor=monitor,
                                          verbose=1,
-                                         save_best_only=True,
-                                         save_weights_only=True,
+                                         save_best_only=save,
+                                         save_weights_only=save,
                                          mode='max')
 
             # Bring all the callbacks together into a python list

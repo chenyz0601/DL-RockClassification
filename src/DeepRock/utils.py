@@ -52,3 +52,38 @@ def remove_unknown_rocks(path, rate, w=256, h=256):
         if tmp.sum() > th:
             os.remove(y_IDs[i])
             os.remove(x_IDs[i])
+            
+def remove_boundary(path):
+    print('removing tiles with bad boundary')
+    x_IDs = sorted(glob.glob(path+'X/*.npy'))
+    y_IDs = sorted(glob.glob(path+'Y/*.npy'))
+    if len(x_IDs) != len(y_IDs):
+        raise ValueError('imgs and labels are not matched!')
+    num = len(x_IDs)
+    for i in range(num):
+        tmp = np.load(x_IDs[i])
+        if np.min(tmp) == 0.0:
+            os.remove(y_IDs[i])
+            os.remove(x_IDs[i])
+            
+def get_acc_cls(tst_true, preds):
+    acc_cls = np.zeros(tst_true.shape[-1])
+    for idx in range(tst_true.shape[0]):
+        tmp_pred = np.argmax(preds[idx,:,:,:], axis=2)
+        tmp_tst = np.argmax(tst_true[idx,:,:,:], axis=2)
+        for cls in range(tst_true.shape[-1]):
+            tmp_pred_ = np.copy(tmp_pred)
+            tmp_tst_ = np.copy(tmp_tst)
+            tmp_pred_[np.where(tmp_pred_ != cls)] = -1
+            tmp_tst_[np.where(tmp_tst_ != cls)] = -1
+            acc_cls[cls] += np.where(tmp_pred_ == tmp_tst_)[0].shape[0]/(256**2)
+    return acc_cls/tst_true.shape[0]
+
+def get_acc(preds, tst_true):
+    acc_list = []
+    for i in range(tst_true.shape[0]):
+        tmp_pred = np.argmax(preds[i,:,:,:], axis=2)
+        tmp_tst = np.argmax(tst_true[i,:,:,:], axis=2)
+        acc_list.append(np.where(tmp_pred == tmp_tst)[0].shape[0]/(256*256))
+    print('mean accuracy on test data is {0}, std is {1}'.format(np.mean(acc_list), np.std(acc_list)))
+    print('max is {0}, min is {1}'.format(max(acc_list), min(acc_list)))
