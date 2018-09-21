@@ -1,5 +1,5 @@
 import numpy as np
-from osgeo import gdal
+# from osgeo import gdal
 import glob
 import keras
 # from sklearn.model_selection import train_test_split
