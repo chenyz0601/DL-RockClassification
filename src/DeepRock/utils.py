@@ -1,5 +1,6 @@
 import numpy as np
 import glob, os
+import matplotlib.pyplot as plt
 
 def make_trainable(net, val):
     # net.trainable = val
@@ -87,3 +88,46 @@ def get_acc(preds, tst_true):
         acc_list.append(np.where(tmp_pred == tmp_tst)[0].shape[0]/(256*256))
     print('mean accuracy on test data is {0}, std is {1}'.format(np.mean(acc_list), np.std(acc_list)))
     print('max is {0}, min is {1}'.format(max(acc_list), min(acc_list)))
+    
+def plot_pg(idx, preds, tst_true):
+    _pred = np.argmax(preds[idx,:,:,:], axis=2)
+    _tst = np.argmax(tst_true[idx,:,:,:], axis=2)
+    plt.subplot(221)
+    plt.imshow(_tst)
+    plt.colorbar()
+    plt.title('ground truth')
+    plt.subplot(222)
+    plt.imshow(_pred)
+    plt.colorbar()
+    plt.title('prediction')
+    plt.show()
+    
+def test_fn(model, data, plot_from=0, plot_end=None, verbose=0):
+    """
+    model: keras model with trained weights
+    data: instance of DataGenerator
+    plot_from, plot_end: default value will plot all test images, 
+                         set plot_end to 0 will not plot any image
+    return: an array of accuracy of each class
+    """
+    # get test data X and labels y
+    print('loading test data ...')
+    X = data.getitem(0)[0]
+    y = data.getitem(0)[1]
+    
+    # predict
+    print('predicting with {0}...'.format(data.dtype))
+    preds = model.predict(X, verbose=verbose)
+    
+    # compute the accuracy
+    get_acc(preds, y)
+    
+    # plot
+    if plot_end is None:
+        plot_end = data.batch_size
+    for i in range(plot_from, plot_end):
+        print(i)
+        plot_pg(i, preds, y)
+    
+    # return accuracy for each class
+    return get_acc_cls(y, preds)
