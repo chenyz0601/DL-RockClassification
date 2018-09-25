@@ -16,7 +16,7 @@ def train(X_trn, Y_trn, X_vld, Y_vld, n_ch_list=[64, 64, 64, 64], lr=1e-3, epoch
     conv.fit_model_generator(trn_data, vld_data, seg_epochs=epochs, seg_steps_per_epoch=None, save_weights=True)
 
 if __name__ == '__main__':
-    X_trn, Y_trn, X_vld, Y_vld, _, _ = split_trn_vld_tst('./data/train/', vld_rate=0.2, tst_rate=0, seed=10)
+    X_trn, Y_trn, X_vld, Y_vld, _, _ = split_trn_vld_tst('./data/train/', vld_rate=0.2, tst_rate=0.1, seed=10)
 <<<<<<< HEAD:train.py
     # fine tune the learning rate
     train(X_trn, Y_trn, X_vld, Y_vld, n_ch_list=[64, 64, 64, 64], lr=0.0005, batch_size=8)
