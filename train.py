@@ -21,7 +21,7 @@ def main(args):
             vld_rate=0.2, tst_rate=0.1, seed=10)
     # fine tune the learning rate
     train(X_trn, Y_trn, X_vld, Y_vld, n_ch_list=[64, 64, 64, 64], lr=5e-4,
-            batch_size=8, epochs=args[1], dtype=args[0])
+            batch_size=8, epochs=int(args[1]), dtype=args[0])
 
 if __name__ == '__main__':
     main(sys.argv[1:])
