@@ -2,7 +2,7 @@ import numpy as np
 import glob, os
 import matplotlib.pyplot as plt
 
-def __data_generation(X_IDs_temp, Y_IDs_temp, dtype):
+def get_XY(X_IDs_temp, Y_IDs_temp, dtype):
 	'Generates data containing batch_size samples' 
 	# X_out : (n_samples, *dim, n_channels)
 	# Y_out : (n_samples, *dim, n_classes)
@@ -24,7 +24,6 @@ def __data_generation(X_IDs_temp, Y_IDs_temp, dtype):
 	else:
 		raise ValueError('unknown dtype, should be sent_geo or sent')
 	return np.asarray(X_out), np.asarray(Y_out)
-    
 
 def make_trainable(net, val):
     # net.trainable = val
