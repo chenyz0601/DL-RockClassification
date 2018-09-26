@@ -3,7 +3,7 @@ import glob, os
 import matplotlib.pyplot as plt
 
 def get_XY(x_ids, y_ids):
-    if len(x_ids) is not len(y_ids):
+    if len(x_ids) ~= len(y_ids):
         raise ValueError('X and y are not matched!')
     x = []
     y = []
