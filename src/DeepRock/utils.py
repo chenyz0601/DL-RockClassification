@@ -2,6 +2,17 @@ import numpy as np
 import glob, os
 import matplotlib.pyplot as plt
 
+def get_XY(x_ids, y_ids):
+    if len(x_ids) is not len(y_ids):
+        raise ValueError('X and y are not matched!')
+    x = []
+    y = []
+    for i in range(len(x_ids)):
+        x.append(np.load(x_ids[i]))
+        y.append(np.load(y_ids[i]))
+    return np.asarray(x), np.asarray(y)
+    
+
 def make_trainable(net, val):
     # net.trainable = val
     for l in net.layers:

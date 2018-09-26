@@ -262,16 +262,22 @@ class AdvSeg:
                   Y_trn,
                   verbose=1,
                   validation_split=0.2,
-                  batch_size=6,
-                  num_epochs=10):
-        self.model.fit(x=X_trn,
-                       y=Y_trn,
-                       verbose=verbose,
-                       validation_split=validation_split, 
-                       batch_size=batch_size,
-                       epochs=self.init_epoch+num_epochs,
-                       callbacks=self.callbackList,
-                       initial_epoch=self.init_epoch)
+                  batch_size=16,
+                  init_epoch=0,
+                  num_epochs=10, 
+                  use_tfboard=True, 
+                  save_weights=True):
+        cl = self.build_callbackList(use_tfboard=use_tfboard, 
+                                     monitor='val_acc', 
+                                     save=save_weights)
+        self.seg_model.fit(x=X_trn,
+                           y=Y_trn,
+                           verbose=verbose,
+                           validation_split=validation_split, 
+                           batch_size=batch_size,
+                           epochs=num_epochs,
+                           callbacks=cl,
+                           initial_epoch=init_epoch)
 
     def save_weights(self, suffix='model-1'):
         if self.model_type == None:
