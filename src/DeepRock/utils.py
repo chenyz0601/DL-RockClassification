@@ -2,15 +2,28 @@ import numpy as np
 import glob, os
 import matplotlib.pyplot as plt
 
-def get_XY(x_ids, y_ids):
-    if len(x_ids) ~= len(y_ids):
-        raise ValueError('X and y are not matched!')
-    x = []
-    y = []
-    for i in range(len(x_ids)):
-        x.append(np.load(x_ids[i]))
-        y.append(np.load(y_ids[i]))
-    return np.asarray(x), np.asarray(y)
+def __data_generation(X_IDs_temp, Y_IDs_temp, dtype):
+	'Generates data containing batch_size samples' 
+	# X_out : (n_samples, *dim, n_channels)
+	# Y_out : (n_samples, *dim, n_classes)
+	# Initialization
+	X_out = []
+	Y_out = []
+	if dtype == 'sent_ast_geo':
+		for i in range(len(X_IDs_temp)):
+			X_out.append(np.transpose(np.load(X_IDs_temp[i]), [1,2,0]))
+			Y_out.append(np.transpose(np.load(Y_IDs_temp[i]), [1,2,0]))
+	elif dtype == 'sent':
+		for i in range(len(X_IDs_temp)):
+			X_out.append(np.transpose(np.load(X_IDs_temp[i])[:10,:,:], [1,2,0]))
+			Y_out.append(np.transpose(np.load(Y_IDs_temp[i]), [1,2,0]))
+	elif dtype == 'sent_ast':
+		for i in range(len(X_IDs_temp)):
+			X_out.append(np.transpose(np.load(X_IDs_temp[i])[:16,:,:], [1,2,0]))
+			Y_out.append(np.transpose(np.load(Y_IDs_temp[i]), [1,2,0]))
+	else:
+		raise ValueError('unknown dtype, should be sent_geo or sent')
+	return np.asarray(X_out), np.asarray(Y_out)
     
 
 def make_trainable(net, val):
