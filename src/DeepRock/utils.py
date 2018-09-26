@@ -85,8 +85,8 @@ def remove_boundary(path):
         raise ValueError('imgs and labels are not matched!')
     num = len(x_IDs)
     for i in range(num):
-        tmp = np.load(x_IDs[i])
-        if np.min(tmp) == 0.0:
+        tmp = np.load(x_IDs[i])[0,:,:]
+        if tmp.min() == 0.0:
             os.remove(y_IDs[i])
             os.remove(x_IDs[i])
             
