@@ -10,7 +10,7 @@ def train(X_trn, Y_trn, n_ch_list=[64, 64, 64, 64], lr=1e-3,
     conv = AdvSeg(dtype=dtype)
     conv.build_SegmentationNet(lr=lr, n_ch_list=n_ch_list)
     x, y = get_XY(X_trn, Y_trn, dtype)
-    conv.fit_model(x, y, num_epochs=epochs)
+    conv.fit_model(x, y, num_epochs=epochs, batch_size=batch_size)
 
 def main(args):
     X_trn, Y_trn, _, _, _, _ = split_trn_vld_tst('./data/block1/train/',
