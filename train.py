@@ -13,8 +13,8 @@ def train(X_trn, Y_trn, n_ch_list=[64, 64, 64, 64], lr=1e-3,
     conv.fit_model(x, y, num_epochs=epochs)
 
 def main(args):
-    X_trn, Y_trn, _, _, _, _ = split_trn_vld_tst('./data/train/',
-            vld_rate=0, tst_rate=0.1, seed=10)
+    X_trn, Y_trn, _, _, _, _ = split_trn_vld_tst('./data/block1/train/',
+            vld_rate=0, tst_rate=0, seed=10)
     # fine tune the learning rate
     train(X_trn, Y_trn, n_ch_list=[64, 64, 64, 64], lr=float(args[2]),
             batch_size=8, epochs=int(args[1]), dtype=args[0])
