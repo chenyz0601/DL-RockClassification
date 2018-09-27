@@ -162,7 +162,7 @@ class AdvSeg:
                             adv_epochs=10,
                             adv_steps_per_epoch=10,
                             seg_epochs=10,
-                            seg_steps_per_epoch=10,
+                            seg_steps_per_epoch=None,
                             num_round=1, 
                             save_weights=True):
             print('fitting model {0}'.format(self.model_type))
