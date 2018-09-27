@@ -30,7 +30,7 @@ def make_trainable(net, val):
     for l in net.layers:
         l.trainable = val
 
-def split2Tiles(path, arr, x_size=256, y_size=256, suffix='block1'):
+def split2Tiles(path, arr, x_size=256, y_size=256, suffix='block1', max_num=float('inf')):
     xx, yy = arr.shape[1], arr.shape[2]
     x_num = int(xx/x_size)
     y_num = int(yy/y_size)
@@ -38,6 +38,8 @@ def split2Tiles(path, arr, x_size=256, y_size=256, suffix='block1'):
     count = 0
     for i in range(x_num):
         for j in range(y_num):
+            if count >= max_num:
+                break
             tmp = arr[:, x_size*i: x_size*(i+1), y_size*j: y_size*(j+1)]
             np.save(path+'{0}_{1}'.format(suffix, count), tmp)
             count += 1
