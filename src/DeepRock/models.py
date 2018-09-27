@@ -27,6 +27,12 @@ class AdvSeg:
         elif dtype == 'sent_ast_geo':
             self.dtype = dtype
             self.num_bands = 29
+        elif dtype == 'sent_geo':
+            self.dtype = dtype
+            self.num_bands = 23
+        elif dtype == 'ast':
+            self.dtype = dtype
+            self.num_bands = 6
         else:
             raise ValueError('unknown dtype, should be sent or sent_geo!')
         self.dim_width = dim_width
