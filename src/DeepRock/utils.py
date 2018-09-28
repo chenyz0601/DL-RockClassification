@@ -2,6 +2,31 @@ import numpy as np
 import glob, os
 import matplotlib.pyplot as plt
 
+def get_data(Xids, Yids, num, l=100):
+    """
+    Xids: id of X
+    Yids: id of Y
+    num: number of samples
+    l: number of different tiles
+    return: matirx in shape (num, feats) and (num)
+    """
+    if len(Xids) != len(Yids):
+        raise ValueError('X and Y are not match!!')
+    outX = np.zeros([num, 29])
+    outY = np.zeros(num)
+    count = 0
+    for _ in range(l):
+        idx = np.random.randint(0, len(Xids)-1)
+        xx = np.load(Xids[idx])
+        yy = np.argmax(np.load(Yids[idx]), axis=0)
+        for _ in range(int(num/l)):
+            x = np.random.randint(0,255)
+            y = np.random.randint(0,255)
+            outX[count,:] = xx[:,x,y]
+            outY[count] = yy[x,y]
+            count += 1
+    return outX, outY
+
 def get_XY(X_IDs_temp, Y_IDs_temp, dtype):
 	'Generates data containing batch_size samples' 
 	# X_out : (n_samples, *dim, n_channels)
