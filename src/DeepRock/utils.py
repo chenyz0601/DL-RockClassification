@@ -135,6 +135,9 @@ def get_acc_cls(tst_true, preds):
     return acc_cls/tst_true.shape[0]
 
 def get_acc(preds, tst_true):
+    """
+    input array should be in shape of [num_samples, dim_width, dim_height, depth]
+    """
     acc_list = []
     for i in range(tst_true.shape[0]):
         tmp_pred = np.argmax(preds[i,:,:,:], axis=2)
