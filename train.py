@@ -1,7 +1,6 @@
 from src.DeepRock.models import AdvSeg
 from src.DeepRock.data import DataGenerator
 from src.DeepRock.utils import split_trn_vld_tst, get_XY
-import matplotlib.pyplot as plt
 import numpy as np
 import sys
 
