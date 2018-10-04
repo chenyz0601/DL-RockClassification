@@ -17,7 +17,7 @@ def main(args):
     trn = DataGenerator(X_trn, Y_trn, dtype=args[0], batch_size=32)
     vld = DataGenerator(X_vld, Y_vld, dtype=args[0], batch_size=32)
     # fine tune the learning rate
-    train(trn, vld, n_ch_list=[64, 64], lr=5e-4, epochs=100, dtype=args[0])
+    train(trn, vld, n_ch_list=[64, 64], lr=1e-3, epochs=200, dtype=args[0])
 
 if __name__ == '__main__':
     main(sys.argv[1:])
