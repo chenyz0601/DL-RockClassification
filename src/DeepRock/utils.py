@@ -191,6 +191,7 @@ def test_fn(model, data, plot_from=0, plot_end=None, verbose=0):
 
 def plot_confusion_matrix(cm,
                           target_names,
+                          cr,
                           title='Confusion matrix',
                           cmap=None,
                           normalize=True):
@@ -262,5 +263,5 @@ def plot_confusion_matrix(cm,
 
     plt.tight_layout()
     plt.ylabel('True label')
-    plt.xlabel('Predicted label\naccuracy={:0.4f}; misclass={:0.4f}'.format(accuracy, misclass))
+    plt.xlabel('Predicted label\naccuracy={:0.4f}; confident rate={:0.4f}'.format(accuracy, cr))
     plt.show()
